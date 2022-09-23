@@ -1,0 +1,16 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="wbn_view_order_product_search">
+            <field name="name">wbn.view_order_product_search</field>
+            <field name="model">sale.report</field>
+            <field name="inherit_id" ref="sale.view_order_product_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='Sales']" position="after">
+                    <separator/>
+                    <filter name="delivery_status_open" string="Delivery Status: Open" domain="[('delivery_status','=','Open')]"/>
+                    <filter name="delivery_status_closed" string="Delivery Status: Closed" domain="[('delivery_status','=','Closed')]"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

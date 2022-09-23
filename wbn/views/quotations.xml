@@ -1,0 +1,32 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="wbn.quotations_tree">
+            <field name="name">wbn.quotations.tree</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_quotation_tree"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="client_order_ref"/>
+                </field>
+                <field name="amount_total" position="before">
+                    <field name="gut_qty_total"/>
+                </field>
+                <field name="gut_qty_total" position="after">
+                    <field name="gut_qty_delivered"/>
+                </field>
+                <field name="gut_qty_delivered" position="after">
+                    <field name="gut_qty_invoiced"/>
+                </field>
+                <field name="gut_qty_invoiced" position="after">
+                    <field name="amount_untaxed"/>
+                </field>
+                <field name="amount_untaxed" position="after">
+                    <field name="amount_tax"/>
+                </field>
+                <field name="amount_tax" position="after">
+                    <field name="gut_total_discount"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</odoo>

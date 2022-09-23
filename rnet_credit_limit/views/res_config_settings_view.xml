@@ -1,0 +1,121 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="res_config_settings_view_form">
+            <field name="name">cr.res.config.settings.view.form</field>
+            <field name="model">res.config.settings</field>
+            <field name="priority" eval="99"/>
+            <field name="inherit_id" ref="base.res_config_settings_view_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//div[@class='row mt16 o_settings_container'][5]/div[@class='col-12 col-lg-6 o_setting_box'][2]" position="after">
+                    <div class="col-12 col-lg-6 o_setting_box">
+                    </div>
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane">
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <div class="row">
+                                <div class="col-12">
+                                    <span class="o_form_label">Credit Limit - Sales Order Validation</span>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <div class="text-muted">
+                                        Warn user when customer AP Balance reach customer credit limit on sales order validation process.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <span>Warning Type</span>
+                                </div>
+                                <div class="col-6">
+                                    <field name="sales_order_validation_cr"/>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <span class="o_form_label">Credit Limit - Delivery Order Validation</span>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <div class="text-muted">
+                                        Warn user when customer AP Balance reach customer credit limit on delivery order validation process.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <span>Warning Type</span>
+                                </div>
+                                <div class="col-6">
+                                    <field name="delivery_order_validation_cr"/>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <span class="o_form_label">Overdue Limit - Sales Order Validation</span>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <div class="text-muted">
+                                        Warn user when customer AP overdue age balance reach maximum age allowed on sales order validation process.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span>Max Overdue Allowed</span>
+                                </div>
+                                <div class="col-6">
+                                    <field name="maximum_allowed_ap_so"/>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <span>Warning Type</span>
+                                </div>
+                                <div class="col-6">
+                                    <field name="sales_order_validation_ow"/>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <span class="o_form_label">Overdue Limit - Delivery Order Validation</span>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <div class="text-muted">
+                                        Warn user when customer AP overdue age balance reach maximum age allowed on delivery order validation process.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span>Max Overdue Allowed</span>
+                                </div>
+                                <div class="col-6">
+                                    <field name="maximum_allowed_ap_do"/>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <span>Warning Type</span>
+                                </div>
+                                <div class="col-6">
+                                    <field name="delivery_order_validation_ow"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

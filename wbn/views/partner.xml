@@ -1,0 +1,55 @@
+
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="wbn.view_partner_form">
+            <field name="name">wbn.view_partner_form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/div[2]/h1/field[@name='name']" position="replace">
+                    <field name="name" default_focus="1" placeholder="Name"
+                        attrs="{'required' : [('type', '=', 'contact')]}" options="{'always_reload': True}"/>
+                </xpath>
+                <xpath expr="//form[1]/sheet[1]/notebook[1]/page[3]/group[1]/group[3]/field[@name='barcode']" position="attributes">
+                    <attribute name="string">Alias</attribute>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="wbn.view_partner_tree">
+            <field name="name">wbn.view_partner_tree</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_tree"/>
+            <field name="arch" type="xml">
+                <field name="ref" position="attributes">
+                    <attribute name="string">Reference</attribute>
+                </field>
+                <field name="display_name" position="replace">
+                    <field name="name"/>
+                </field>
+                <field name="name" position="after">
+                    <field name="barcode"/>
+                </field>
+                <field name="barcode" position="attributes">
+                    <attribute name="string">Alias</attribute>
+                </field>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="wbn.view_res_partner_filter">
+            <field name="name">wbn.view_res_partner_filter</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_res_partner_filter"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="barcode"/>
+                    <field name="ref"/>
+                </field>
+                <field name="barcode" position="attributes">
+                    <attribute name="string">Alias</attribute>
+                </field>
+                <field name="ref" position="attributes">
+                    <attribute name="string">Internal Reference</attribute>
+                </field>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <template id="web_assets_backend" name="wbn_assets" inherit_id="web.assets_backend">
+            <xpath expr="." position="inside">
+                <link href="/wbn/static/src/css/wbn.css" rel="stylesheet" />
+            </xpath>
+        </template>
+        <template id="report_assets_common_custom_fonts" name="qweb_fonts less backend assets"
+            inherit_id="web.report_assets_common">
+            <xpath expr="." position="inside">
+                <link href="/wbn/static/src/less/fonts.less" rel="stylesheet" type="text/less"/>
+            </xpath>
+        </template>
+    </data>
+</odoo>

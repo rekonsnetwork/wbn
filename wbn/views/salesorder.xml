@@ -1,0 +1,60 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="wbn.sales_order">
+            <field name="name">wbn.salesorder</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <field name="sale_order_template_id" position="after">
+                    <field name="gut_remark"/>
+                </field>
+
+                <xpath expr="//sheet/notebook/page[@name='other_information']" position="after">
+                    <page string='Note'>
+                        <field name="gut_note"/>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="wbn.sales_order_tree">
+            <field name="name">wbn.salesorder.tree</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_tree"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="client_order_ref"/>
+                </field>
+                <field name="amount_total" position="before">
+                    <field name="gut_qty_total"/>
+                </field>
+                <field name="gut_qty_total" position="after">
+                    <field name="gut_qty_delivered"/>
+                </field>
+                <field name="gut_qty_delivered" position="after">
+                    <field name="gut_qty_outstanding"/>
+                </field>
+                <field name="gut_qty_outstanding" position="after">
+                    <field name="gut_delivery_status"/>
+                </field>
+                <field name="gut_delivery_status" position="after">
+                    <field name="gut_qty_invoiced"/>
+                </field>
+                <field name="gut_qty_invoiced" position="after">
+                    <field name="amount_untaxed"/>
+                </field>
+                <field name="amount_untaxed" position="after">
+                    <field name="amount_tax"/>
+                </field>
+                <field name="amount_tax" position="after">
+                    <field name="gut_total_discount"/>
+                </field>
+                <field name="amount_total" position="after">
+                    <field name="state"/>
+                </field>
+                <field name="state" position="after">
+                    <field name="gut_remark"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</odoo>

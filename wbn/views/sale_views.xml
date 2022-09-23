@@ -1,0 +1,10 @@
+<odoo>
+    <!-- override existing menu sequences -->
+    <record model="ir.ui.menu" id="sale.sales_team_config">
+        <field name="sequence">3</field>
+    </record>
+    <record model="ir.ui.menu" id="sale.menu_sales_config">
+        <field name="sequence">4</field>
+    </record>
+    <!-- -->
+</odoo>

@@ -1,0 +1,35 @@
+<odoo>
+    <data noupdate="True">
+        <record id="sequence_expense" model="ir.sequence">
+            <field name="name">Expense No</field>
+            <field name="code">expense.no</field>
+            <field name="active">TRUE</field>
+            <field name="prefix">EX</field>
+            <field name="padding">6</field>
+            <field name="number_next">173</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record model="ir.ui.view" id="wbn_expense_sheet_form">
+            <field name="name">wbn.expense_sheet_form</field>
+            <field name="model">hr.expense.sheet</field>
+            <field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/group/group/field[@name='employee_id']" position="before">
+                    <field name="seq"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="wbn_expense_sheet_tree">
+            <field name="name">wbn.expense_sheet_tree</field>
+            <field name="model">hr.expense.sheet</field>
+            <field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_tree"/>
+            <field name="arch" type="xml">
+                <field name="name" position="before">
+                    <field name="seq"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</odoo>

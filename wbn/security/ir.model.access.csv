@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_vw_so_line_rpt_01,access_vw_so_line_rpt_01,model_vw_so_line_rpt_01,,1,1,1,1
+access_vw_po_line_rpt_01,access_vw_po_line_rpt_01,model_vw_po_line_rpt_01,,1,1,1,1
+access_business_unit,access_business_unit,model_business_unit,,1,1,1,1
+access_sales_area,access_sales_area,model_sales_area,,1,1,1,1

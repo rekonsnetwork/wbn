@@ -1,0 +1,46 @@
+<odoo>
+    <record id="wbn_view_business_unit_tree" model="ir.ui.view">
+        <field name="name">wbn.view_business_unit_tree</field>
+        <field name="model">business.unit</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="note"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="wbn_view_business_unit_form" model="ir.ui.view">
+        <field name="name">wbn.view_business_unit_form</field>
+        <field name="model">business.unit</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="code" placeholder="Business Unit Code"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <field name="name"/>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="open_business_unit">
+        <field name="name">Business Unit</field>
+        <field name="res_model">business.unit</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="wbn_view_business_unit_tree"/>
+    </record>
+
+    <menuitem id="menu_business_unit"
+          name="Business Unit"
+          parent="sale.menu_sale_config"
+          action="open_business_unit" sequence="2"/>
+</odoo>

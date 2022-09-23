@@ -1,0 +1,18 @@
+<odoo>
+    <data>
+        <template id="rnet_report_expense_sheet" inherit_id="mrp.report_mrporder">
+            <xpath expr="//div[@class='row mt32 mb32'][1]/div[@class='col-3'][3]" position="after">
+                <div class="col-3">
+                  <strong>No SO:</strong>
+                  <br/>
+                  <span t-field="o.order_id"/>
+                </div>
+                <div class="col-3">
+                  <strong>Customer:</strong>
+                  <br/>
+                  <span t-field="o.customer_id"/>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>

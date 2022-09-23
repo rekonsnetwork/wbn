@@ -1,0 +1,67 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="wbn_sales_lines_view">
+            <field name="name">wbn.sales.lines.view</field>
+            <field name="model">vw_so_line_rpt_01</field>
+            <field name="arch" type="xml">
+                <search string="Sales Line Report">
+                    <field name="order_no"/>
+                    <field name="customer"/>
+                    <field name="sales_person"/>
+
+                    <filter name="fil_by_open_delivery" string="Delivery Status: Open" domain="[('delivery_status','=','Open')]" help="Show only to deliver items"/>
+                    <filter name="fil_by_close_delivery" string="Delivery Status: Close" domain="[('delivery_status','=','Close')]" help="Show only delivered items"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Delivery Status" name="grp_delivery_status" context="{'group_by': 'delivery_status'}"></filter>
+                        <filter string="Line Invoice Status" name="grp_line_inv_status" context="{'group_by': 'line_invoice_status'}"></filter>
+                        <filter string="Order Invoice Status" name="grp_order_inv_status" context="{'group_by': 'order_invoice_status'}"></filter>
+                    </group>
+                </search>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="wbn_sales_lines">
+            <field name="name">wbn.sales.lines</field>
+            <field name="model">vw_so_line_rpt_01</field>
+            <field name="arch" type="xml">
+                <tree create="false" edit="false">
+                    <field name="order_no"/>
+                    <field name="order_date"/>
+                    <field name="customer_ref"/>
+                    <field name="customer"/>
+                    <field name="sales_person"/>
+                    <field name="line_description"/>
+                    <field name="product_default_code"/>
+                    <field name="product_name"/>
+                    <field name="qty_order"/>
+                    <field name="qty_delivered"/>
+                    <field name="qty_outstanding"/>
+                    <field name="delivery_status"/>
+                    <field name="qty_invoiced"/>
+                    <field name="qty_return_refund"/>
+                    <field name="qty_return_no_refund"/>
+                    <field name="qty_delivery_manual"/>
+                    <field name="qty_scrapt"/>
+                    <field name="stock_move_row"/>
+                    <field name="unit_price"/>
+                    <field name="sub_total"/>
+                    <field name="tax"/>
+                    <field name="discount"/>
+                    <field name="total"/>
+                    <field name="line_status"/>
+                    <field name="line_invoice_status"/>
+                    <field name="order_status"/>
+                    <field name="order_invoice_status"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="open_so_line_rpt_01">
+            <field name="name">Sales Lines</field>
+            <field name="res_model">vw_so_line_rpt_01</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+        </record>
+
+        <menuitem id="menu_sales_lines" name="Sales Lines" parent="sale.menu_sale_report" action="open_so_line_rpt_01" sequence="2"/>
+    </data>
+</odoo>

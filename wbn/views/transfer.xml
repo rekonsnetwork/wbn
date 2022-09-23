@@ -1,0 +1,41 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="wbn.stock_search">
+            <field name="name">wbn.stock.search</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+            <field name="arch" type="xml">
+                <field name="name" string="Picking List" filter_domain="['|',('name','ilike', self),('origin','ilike',self)]"/>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="wbn.stock_vpicktree">
+            <field name="name">wbn.stock.vpicktree</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.vpicktree"/>
+            <field name="arch" type="xml">
+                <field name="origin" position="after">
+                    <field name="carrier_tracking_ref"/>
+                </field>
+                <field name="carrier_tracking_ref" position="after">
+                    <field name="gut_initial_demand"/>
+                </field>
+                <field name="gut_initial_demand" position="after">
+                    <field name="gut_qty_done"/>
+                </field>
+                <field name="gut_qty_done" position="after">
+                    <field name="gut_transfer_status"/>
+                </field>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="wbn.view_picking_form">
+            <field name="name">wbn.view.picking.form</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@class='oe_highlight'][4]" position="after">
+                    <button name="preview_picking" string="Preview" class="oe_highlight" type="object" attrs="{'invisible':True}"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
