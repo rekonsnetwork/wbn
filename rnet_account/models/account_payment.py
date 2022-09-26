@@ -12,7 +12,6 @@ class AccountPayment(models.Model):
             if move:
                 move.write({
                     'ref': None,
-                    # TODO: Konfirmasi apa yang dimaksud dengan No. Reg Payment pada task 17.
                     'ref2': inv.number,
                 })
         return res
