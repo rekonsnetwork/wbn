@@ -6,7 +6,7 @@ from werkzeug import url_encode
 class HrExpenseSheetRegisterPaymentWizard (models.TransientModel):
     _inherit = 'hr.expense.sheet.register.payment.wizard'
 
-    # Override semua method karena perlu akses ke local instance payment.
+    # Override semua method karena perlu akses ke local variable.
     # https://github.com/odoo/odoo/blob/12.0/addons/hr_expense/wizard/hr_expense_sheet_register_payment.py#L93
     @api.multi
     def expense_post_payment(self):
@@ -40,7 +40,7 @@ class HrExpenseSheetRegisterPaymentWizard (models.TransientModel):
     def _update_account_move_refs(self, payment, expense_sheet):
         move = expense_sheet.account_move_id
         move.write({
-            'ref': None,
+            'ref': payment.name,
             'ref2': expense_sheet.seq,
         })
 
@@ -48,6 +48,6 @@ class HrExpenseSheetRegisterPaymentWizard (models.TransientModel):
             [('name', '=', payment.move_name)])
         if payment_move:
             payment_move.write({
-                'ref': None,
+                'ref': payment.name,
                 'ref2': expense_sheet.seq,
             })
