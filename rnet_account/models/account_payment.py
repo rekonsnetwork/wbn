@@ -11,7 +11,7 @@ class AccountPayment(models.Model):
             move = self.env['account.move'].search([('name', '=', inv.number)])
             if move:
                 move.write({
-                    'ref': None,
+                    'ref': self.name,
                     'ref2': inv.number,
                 })
         return res
