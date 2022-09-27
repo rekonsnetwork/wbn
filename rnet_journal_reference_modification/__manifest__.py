@@ -1,9 +1,9 @@
 {
-    'name': 'RNET Account',
+    'name': 'RNET Journal Reference Modification',
     'version': '1.0',
     'depends': ['account', 'hr_expense'],
     'author': 'RNET',
-    'summary': 'Modifikasi modul accounting',
+    'summary': 'Modifikasi pembentukan jurnal',
     'description': """
         Modifikasi pembentukan jurnal:
         - Tambah field Ref 2 & 3 di jurnal entries.
