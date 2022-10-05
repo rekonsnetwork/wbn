@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="aged_parner_balance_wizard" model="ir.ui.view">
+        <field name="name">Aged Partner Balance Wizard</field>
+        <field name="model">bi.account.aged.partner.balance</field>
+        <field name="inherit_id" ref="bi_partner_ledger_report.bi_partner_ledger_report_form_partner_aged_ledger" />
+        <field name="arch" type="xml">
+            <field name="date_from" position="attributes">
+                <attribute name="string">Position Date</attribute>
+            </field>
+            <field name="target_move" position="after">
+                <newline />
+                <field name="data_level" widget="radio" />
+                <field name="balance_value" widget="radio" />
+            </field>
+        </field>
+    </record>
+</odoo>
