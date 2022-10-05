@@ -11,5 +11,5 @@ class AccountAgedPartnerBalance(models.TransientModel):
 
     data_level = fields.Selection([
         ('by_partner', 'By Partner'),
-        ('by_transaction', 'By Partner')
+        ('by_transaction', 'By Transaction')
     ], required=True, default='by_partner')
