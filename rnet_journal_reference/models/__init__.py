@@ -3,3 +3,4 @@ from . import account_invoice
 from . import account_payment
 from . import hr_expense
 from . import hr_expense_sheet_register_payment
+from . import account_financial_report

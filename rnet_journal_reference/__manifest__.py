@@ -1,7 +1,7 @@
 {
     'name': 'RNET Journal Reference',
     'version': '1.0',
-    'depends': ['account', 'hr_expense', 'bi_financial_pdf_reports'],
+    'depends': ['hr_expense', 'bi_financial_pdf_reports'],
     'author': 'Rekons Network',
     'website': 'http://www.rekons.net/',
     'summary': 'Modifikasi pembentukan jurnal dan report',
@@ -14,6 +14,7 @@
     """,
     'data': [
         'views/account_view.xml',
+        'reports/report_generalledger.xml'
     ],
     'demo': [],
     'category': 'Invoicing Management',

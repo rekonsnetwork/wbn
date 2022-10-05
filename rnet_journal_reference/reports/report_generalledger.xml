@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_generalledger" inherit_id="bi_financial_pdf_reports.report_generalledger">
+        <xpath expr="//tr[@class='text-center']/th[4]" position="after">
+            <th>Ref 2</th>
+            <th>Ref 3</th>
+        </xpath>
+        <xpath expr="//tbody//tr[2]/td[4]" position="after">
+            <td>
+                <span t-if="line['mref2']" t-esc="line['mref2']" />
+            </td>
+            <td>
+                <span t-if="line['mref3']" t-esc="line['mref3']" />
+            </td>
+        </xpath>
+    </template>
+</odoo>
