@@ -1,4 +1,7 @@
 from odoo import _, api, fields, models
+import xlwt
+import base64
+import io
 
 
 class AccountingReportBi(models.TransientModel):
@@ -91,3 +94,98 @@ class AccountingReportBi(models.TransientModel):
                 account_res.append(res)
 
         return account_res
+
+    # Terpaksa harus override semua method karena perlu nambah kolom Excel.
+    @api.multi
+    def _print_general_ledger_excel_report(self, report_lines):
+        filename = 'General Ledger.xls'
+        workbook = xlwt.Workbook()
+        worksheet = workbook.add_sheet('Sheet 1')
+        date_format = xlwt.XFStyle()
+        date_format.num_format_str = 'dd/mm/yyyy'
+        style_header = xlwt.easyxf(
+            "font:height 300; font: name Liberation Sans, bold on,color black; align: horiz center")
+        style_line = xlwt.easyxf(
+            "font:bold on,color black;")
+        worksheet.row(0).height_mismatch = True
+        worksheet.row(0).height = 500
+        worksheet.write_merge(0, 0, 0, 5, self.env['res.users'].browse(
+            self.env.uid).company_id.name + " : General Ledger Report", style=style_header)
+        worksheet.write(2, 0, 'Journals')
+        worksheet.write(2, 1, 'Display Account')
+        worksheet.write(2, 2, 'Target Moves')
+        worksheet.write(2, 3, 'Sorted By')
+        if self.date_from:
+            worksheet.write(2, 4, 'Date From')
+        if self.date_to:
+            worksheet.write(2, 5, 'Date To')
+        journals = ', '.join([lt.code or '' for lt in self.journal_ids])
+        if self.display_account == 'all':
+            display_account = 'All accounts'
+        elif self.display_account == 'movement':
+            display_account = 'With movements'
+        else:
+            display_account = 'With balance not equal to zero'
+        worksheet.write(3, 0, journals)
+        worksheet.write(3, 1, display_account)
+        worksheet.write(
+            3, 2, 'All Posted Entries' if self.target_move == 'posted' else 'All Entries')
+        worksheet.write(3, 3, 'Date' if self.sortby ==
+                        'sort_date' else 'Journal and Partner')
+        if self.date_from:
+            worksheet.write(3, 4, self.date_from, date_format)
+        if self.date_to:
+            worksheet.write(3, 5, self.date_to, date_format)
+
+        worksheet.write(5, 0, 'Date')
+        worksheet.write(5, 1, 'JRNL')
+        worksheet.write(5, 2, 'Partner')
+        worksheet.write(5, 3, 'Ref')
+        worksheet.write(5, 4, 'Ref 2')
+        worksheet.write(5, 5, 'Ref 3')
+        worksheet.write(5, 6, 'Move')
+        worksheet.write(5, 7, 'Entry Label')
+        worksheet.write(5, 8, 'Debit')
+        worksheet.write(5, 9, 'Credit')
+        worksheet.write(5, 10, 'Balance')
+        row = 6
+        col = 0
+
+        for line in report_lines:
+            flag = False
+            worksheet.write_merge(row, row, 0, 5, line.get(
+                'code') + line.get('name'), style=style_line)
+            worksheet.write(row, col+6, line.get('debit'), style=style_line)
+            worksheet.write(row, col+7, line.get('credit'), style=style_line)
+            worksheet.write(row, col+8, line.get('balance'), style=style_line)
+            for move_line in line.get('move_lines'):
+                row += 1
+                worksheet.write(row, col, move_line.get('ldate'), date_format)
+                worksheet.write(row, col + 1, move_line.get('lcode'))
+                worksheet.write(row, col + 2, move_line.get('partner_name'))
+                worksheet.write(row, col + 3, move_line.get('lref'))
+                worksheet.write(row, col + 4, move_line.get('mref2'))
+                worksheet.write(row, col + 5, move_line.get('mref3'))
+                worksheet.write(row, col + 6, move_line.get('move_name'))
+                worksheet.write(row, col + 7, move_line.get('lname'))
+                worksheet.write(row, col + 8, move_line.get('debit'))
+                worksheet.write(row, col + 9, move_line.get('credit'))
+                worksheet.write(row, col + 10, move_line.get('balance'))
+                row += 1
+                flag = True
+            if not flag:
+                row += 1
+        fp = io.BytesIO()
+        workbook.save(fp)
+
+        export_id = self.env['excel.report'].create(
+            {'excel_file': base64.encodestring(fp.getvalue()), 'file_name': filename})
+        res = {
+            'view_mode': 'form',
+            'res_id': export_id.id,
+            'res_model': 'excel.report',
+            'view_type': 'form',
+            'type': 'ir.actions.act_window',
+            'target': 'new'
+        }
+        return res
