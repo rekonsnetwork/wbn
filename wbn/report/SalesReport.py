@@ -19,6 +19,8 @@ class SalesReport(models.Model):
     nbr = fields.Integer('Done Deliveries', readonly=True)
     name = fields.Char('Customer Reference', readonly=True)
 
+    price_unit = fields.Float('Unit Price Avg.', group_operator='avg')
+
     @api.model_cr
     def init(self):
         return
