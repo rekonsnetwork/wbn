@@ -1,5 +1,5 @@
 {
-    'name': 'RNET Aging Report Enhancement',
+    'name': 'RNET Partner Ledger Report Enhancement',
     'version': '1.0',
     'depends': ['bi_partner_ledger_report'],
     'author': 'Rekons Network',

@@ -11,7 +11,8 @@
             <field name="target_move" position="after">
                 <newline />
                 <field name="data_level" widget="radio" />
-                <field name="balance_value" widget="radio" />
+                <newline />
+                <field name="partner_ids" domain="[('customer', '=', True)]" widget="many2many_tags" />
             </field>
         </field>
     </record>
