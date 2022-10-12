@@ -31,6 +31,11 @@ class BiReportAgedPartnerBalance(models.AbstractModel):
             account_type = ['payable', 'receivable']
         movelines, total, dummy = self._get_partner_move_lines(account_type, date_from, target_move,
                                                                data['form']['period_length'], data['form']['selected_partner_ids'])
+
+        _logger.info("==========")
+        _logger.info(movelines)
+        _logger.info("==========")
+
         return {
             'doc_ids': self.ids,
             'doc_model': model,
@@ -282,9 +287,11 @@ class BiReportAgedPartnerBalance(models.AbstractModel):
                 values['name'] = browsed_partner.name and len(browsed_partner.name) >= 45 and browsed_partner.name[
                     0:40] + '...' or browsed_partner.name
                 values['trust'] = browsed_partner.trust
+                values['ref'] = browsed_partner.ref
             else:
                 values['name'] = _('Unknown Partner')
                 values['trust'] = False
+                values['ref'] = False
 
             if at_least_one_amount or (self._context.get('include_nullified_amount') and lines[partner['partner_id']]):
                 res.append(values)

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_agedpartnerbalance" name="report_agedpartnerbalance" inherit_id="bi_partner_ledger_report.bi_report_agedpartnerbalance">
+        <xpath expr="//tbody[1]/tr[1]/td[1]" position="replace">
+            <td>
+                [
+                <span t-esc="partner['ref']" />
+                ]
+                &amp;nbsp;
+                <span t-esc="partner['name']" />
+            </td>
+        </xpath>
+    </template>
+</odoo>

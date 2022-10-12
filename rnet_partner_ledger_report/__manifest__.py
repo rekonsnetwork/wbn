@@ -8,7 +8,8 @@
     'description': """
     """,
     'data': [
-        'wizard/account_aged_partner_balance.xml'
+        'wizard/account_aged_partner_balance.xml',
+        'reports/report_aged_partner.xml'
     ],
     'demo': [],
     'category': 'Accounting',
