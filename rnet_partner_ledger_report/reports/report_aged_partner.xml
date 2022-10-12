@@ -1,14 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="report_agedpartnerbalance" name="report_agedpartnerbalance" inherit_id="bi_partner_ledger_report.bi_report_agedpartnerbalance">
-        <xpath expr="//tbody[1]/tr[1]/td[1]" position="replace">
-            <td>
-                [
-                <span t-esc="partner['ref']" />
-                ]
-                &amp;nbsp;
-                <span t-esc="partner['name']" />
-            </td>
+        <xpath expr="//thead[1]" position="replace">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Partners</th>
+                    <th>Currency</th>
+                    <th class="text-right">
+                        <span>Not due</span>
+                    </th>
+                    <th class="text-right">
+                        <span t-esc="data['4']['name']" />
+                    </th>
+                    <th class="text-right">
+                        <span t-esc="data['3']['name']" />
+                    </th>
+                    <th class="text-right">
+                        <span t-esc="data['2']['name']" />
+                    </th>
+                    <th class="text-right">
+                        <span t-esc="data['1']['name']" />
+                    </th>
+                    <th class="text-right">
+                        <span t-esc="data['0']['name']" />
+                    </th>
+                    <th class="text-right">Total</th>
+                </tr>
+                <tr t-if="get_partner_lines">
+                    <th>&amp;nbsp;</th>
+                    <th>Account Total</th>
+                    <th>&amp;nbsp;</th>
+                    <th class="text-right">
+                        <span t-esc="get_direction[6]" t-options="{'widget': 'float', 'precision': 2}" />
+                    </th>
+                    <th class="text-right">
+                        <span t-esc="get_direction[4]" t-options="{'widget': 'float', 'precision': 2}" />
+                    </th>
+                    <th class="text-right">
+                        <span t-esc="get_direction[3]" t-options="{'widget': 'float', 'precision': 2}" />
+                    </th>
+                    <th class="text-right">
+                        <span t-esc="get_direction[2]" t-options="{'widget': 'float', 'precision': 2}" />
+                    </th>
+                    <th class="text-right">
+                        <span t-esc="get_direction[1]" t-options="{'widget': 'float', 'precision': 2}" />
+                    </th>
+                    <th class="text-right">
+                        <span t-esc="get_direction[0]" t-options="{'widget': 'float', 'precision': 2}" />
+                    </th>
+                    <th class="text-right">
+                        <span t-esc="get_direction[5]" t-options="{'widget': 'float', 'precision': 2}" />
+                    </th>
+                </tr>
+            </thead>
+        </xpath>
+        <xpath expr="//tbody[1]" position="replace">
+            <tbody>
+                <tr t-foreach="get_partner_lines" t-as="partner">
+                    <td>
+                        <span t-esc="partner['ref']" />
+                    </td>
+                    <td>
+                        <span t-esc="partner['name']" />
+                    </td>
+                    <td>
+                        IDR
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="partner['direction']" t-options="{'widget': 'float', 'precision': 2}" />
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="partner['4']" t-options="{'widget': 'float', 'precision': 2}" />
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="partner['3']" t-options="{'widget': 'float', 'precision': 2}" />
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="partner['2']" t-options="{'widget': 'float', 'precision': 2}" />
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="partner['1']" t-options="{'widget': 'float', 'precision': 2}" />
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="partner['0']" t-options="{'widget': 'float', 'precision': 2}" />
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="partner['total']" t-options="{'widget': 'float', 'precision': 2}" />
+                    </td>
+                </tr>
+            </tbody>
         </xpath>
     </template>
 </odoo>
