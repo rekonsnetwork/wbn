@@ -65,7 +65,7 @@
                         <span t-esc="partner['name']" />
                     </td>
                     <td>
-                        IDR
+                        <span t-esc="partner['currency']" />
                     </td>
                     <td class="text-right">
                         <span t-esc="partner['direction']" t-options="{'widget': 'float', 'precision': 2}" />

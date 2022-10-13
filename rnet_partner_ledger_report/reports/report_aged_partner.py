@@ -29,12 +29,8 @@ class BiReportAgedPartnerBalance(models.AbstractModel):
             account_type = ['payable']
         else:
             account_type = ['payable', 'receivable']
-        movelines, total, dummy = self._get_partner_move_lines(account_type, date_from, target_move,
+        movelines, total, lines = self._get_partner_move_lines(account_type, date_from, target_move,
                                                                data['form']['period_length'], data['form']['selected_partner_ids'])
-
-        _logger.info("==========")
-        _logger.info(movelines)
-        _logger.info("==========")
 
         return {
             'doc_ids': self.ids,
@@ -44,6 +40,7 @@ class BiReportAgedPartnerBalance(models.AbstractModel):
             'time': time,
             'get_partner_lines': movelines,
             'get_direction': total,
+            'lines': lines,
         }
 
     # Pisahkan fungsi query partners
@@ -247,6 +244,7 @@ class BiReportAgedPartnerBalance(models.AbstractModel):
                         partners_amount[partner_id] += line_amount
                         lines[partner_id].append({
                             'line': line,
+                            'currency': line.move_id.currency_id.name,
                             'amount': line_amount,
                             'period': i + 1,
                         })
@@ -281,6 +279,8 @@ class BiReportAgedPartnerBalance(models.AbstractModel):
             # Add for total
             total[(i + 1)] += values['total']
             values['partner_id'] = partner['partner_id']
+            currency = lines[partner['partner_id']][0]['currency']
+
             if partner['partner_id']:
                 browsed_partner = self.env['res.partner'].browse(
                     partner['partner_id'])
@@ -288,10 +288,12 @@ class BiReportAgedPartnerBalance(models.AbstractModel):
                     0:40] + '...' or browsed_partner.name
                 values['trust'] = browsed_partner.trust
                 values['ref'] = browsed_partner.ref
+                values['currency'] = currency
             else:
                 values['name'] = _('Unknown Partner')
                 values['trust'] = False
                 values['ref'] = False
+                values['currency'] = False
 
             if at_least_one_amount or (self._context.get('include_nullified_amount') and lines[partner['partner_id']]):
                 res.append(values)
