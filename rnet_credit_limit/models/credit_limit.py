@@ -39,7 +39,9 @@ class CreditLimit:
         date_from = time.strftime('%Y-%m-%d')
         target_move = 'all'
         period_length = 30
-        balance, total, dummy = env['report.bi_partner_ledger_report.bi_report_agedpartnerbalance']._get_partner_move_lines(account_type, date_from, target_move, period_length)
+
+        balance, total, dummy = env['report.bi_partner_ledger_report.bi_report_agedpartnerbalance']._get_partner_move_lines(
+            account_type, date_from, target_move, period_length, [partner_id])
         #overdue_days = int(env['ir.config_parameter'].sudo().get_param('rnet_credit_limit.maximum_allowed_ap_so'))
 
         partner_limit = self.is_partner_aged(partner_id, balance, overdue_days)
@@ -58,7 +60,8 @@ class CreditLimit:
         }
 
         age_range = 0
-        partner = list(filter(lambda p: p['partner_id'] == partner_id, partners))
+        partner = list(
+            filter(lambda p: p['partner_id'] == partner_id, partners))
         if not partner:
             return partner_limit
 

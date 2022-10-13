@@ -6,4 +6,4 @@ from . import Stock
 from . import Partner
 from . import BusinessUnit
 from . import SalesArea
-from . import AgedPartnerReport
+# from . import AgedPartnerReport
