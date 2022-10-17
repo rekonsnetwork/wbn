@@ -279,7 +279,10 @@ class BiReportAgedPartnerBalance(models.AbstractModel):
             # Add for total
             total[(i + 1)] += values['total']
             values['partner_id'] = partner['partner_id']
-            currency = lines[partner['partner_id']][0].get('currency', False)
+            currency = False
+            if lines[partner['partner_id']]:
+                currency = lines[partner['partner_id']][0].get(
+                    'currency', False)
 
             if partner['partner_id']:
                 browsed_partner = self.env['res.partner'].browse(
