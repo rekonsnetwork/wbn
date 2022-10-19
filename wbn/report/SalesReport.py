@@ -12,7 +12,7 @@ class SalesReport(models.Model):
     sp_date_done = fields.Date('Delivery Effective Date')
     order_line_total_record = fields.Integer('# of Lines')
     qty_outstanding = fields.Integer('Qty Outstanding')
-    sales_order_total_record = fields.Integer('SO Count')
+    sales_order_total_record = fields.Float('SO Count')
     sp_name = fields.Char('Delivery #')
     weight_delivered = fields.Integer('Gross Weight Delivered')
 
