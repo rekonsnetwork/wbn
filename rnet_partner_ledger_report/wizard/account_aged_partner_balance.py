@@ -17,7 +17,8 @@ class AccountAgedPartnerBalance(models.TransientModel):
 
     data_level = fields.Selection([
         ('summary', 'Summary'),
-        ('detail', 'Detail')
+        ('detail', 'Detail'),
+        ('detailhistory', 'Detail History')
     ], required=True, default='summary')
 
     partner_ids = fields.Many2many('res.partner', string='Partner')
@@ -52,6 +53,7 @@ class AccountAgedPartnerBalance(models.TransientModel):
             'period_length': self.period_length,
             'journal_ids': [a.id for a in self.env['account.journal'].search([])],
             'date_from': self.date_from,
+            'data_level': self.data_level,
             'selected_partner_ids': selected_partner_ids,
         })
         used_context.update(
@@ -60,19 +62,20 @@ class AccountAgedPartnerBalance(models.TransientModel):
                 'strict_range': True,
                 'journal_ids': [a.id for a in self.env['account.journal'].search([])],
                 'date_from': self.date_from,
+                'data_level': self.data_level,
                 'selected_partner_ids': selected_partner_ids,
             }
         )
         data['form']['used_context'] = used_context
         data['form'].update(res)
         if not self._context.get('report_type') == 'excel':
-            if self.data_level == 'detail':
+            if self.data_level in ('detail','detailhistory'):
                 raise UserError(
                     _('Laporan Aged Partner Balance level detail tidak dapat ditampilkan di berkas pdf.'))
             return self.env.ref('bi_partner_ledger_report.action_aged_partner_balance_report').with_context(
                 landscape=True).report_action(self, data=data)
         else:
-            if self.data_level == 'detail':
+            if self.data_level in ('detail','detailhistory'):
                 return self.env['rnet.aged_partner_report_detail'].to_excel(data)
             else:
                 filename = 'Aged Partner Balance.xls'
@@ -99,7 +102,7 @@ class AccountAgedPartnerBalance(models.TransientModel):
                 worksheet.write(
                     3, 3, 'All Posted Entries' if self.target_move == 'posted' else 'All Entries')
                 worksheet.write(5, 0, 'Partners', style=style_table_header)
-                worksheet.write(5, 1, 'Not due', style=style_table_header)
+                worksheet.write(5, 1, 'Over due', style=style_table_header)
                 worksheet.write(5, 2, res['4']['name'],
                                 style=style_table_header)
                 worksheet.write(5, 3, res['3']['name'],

@@ -151,6 +151,7 @@ class AgedPartnerReportDetail(models.TransientModel):
         period_length = data['form']['period_length']
         selected_partner_ids = data['form']['selected_partner_ids']
         internal_types = self._get_internal_types(data)
+        data_level = data['form']['data_level']
 
         query = """
             select
@@ -220,6 +221,11 @@ class AgedPartnerReportDetail(models.TransientModel):
             ids = ", ". join(ids)
             query = query + \
                 " and partner_id in (" + ids + ")"
+
+        if data_level=="detail":
+            query = query + \
+            " and full_reconcile_id is null"        
+
 
         query = query + """
             order by
