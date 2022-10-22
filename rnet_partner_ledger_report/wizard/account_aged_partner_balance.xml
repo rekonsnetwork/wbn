@@ -12,7 +12,7 @@
                 <newline />
                 <field name="data_level" widget="radio" />
                 <newline />
-                <field name="partner_ids" domain="[('customer', '=', True)]" widget="many2many_tags" />
+                <field name="partner_ids" domain="['|',('customer', '=', True),('supplier', '=', True)]" widget="many2many_tags" />
             </field>
         </field>
     </record>

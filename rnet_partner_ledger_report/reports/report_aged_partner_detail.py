@@ -59,33 +59,36 @@ class AgedPartnerReportDetail(models.TransientModel):
         workbook = xlsxwriter.Workbook(output)
 
         # cell formatters
-        short_date_format = workbook.add_format(
-            {'num_format': 'dd/mm/yyyy', 'align': 'center'})
-        long_date_format = workbook.add_format(
-            {'num_format': 'dd/mm/yyyy HH:mm:ss', 'align': 'center'})
+        short_date_format = workbook.add_format({'num_format': 'dd-mmm-yyyy', 'align': 'center'})
+        short_date_format_L = workbook.add_format({'num_format': 'dd-mmm-yyyy', 'align': 'left'})    
+        long_date_format = workbook.add_format({'num_format': 'dd-mmm-yyyy HH:mm:ss', 'align': 'center'})
         float_format = workbook.add_format({'num_format': '#,##0.00'})
-        title_format = workbook.add_format(
-            {'align': 'left', 'valign': 'vcenter', 'bold': True, 'font_size': 16})
-        header_format = workbook.add_format({'bold': True, })
+        title_format = workbook.add_format({'align': 'left', 'valign': 'vcenter', 'bold': True, 'font_size': 16})
+        parameter_format = workbook.add_format({'bold': True,  'align': 'left'})
+        parameter_format_value = workbook.add_format({'align': 'left'})
+        header_format = workbook.add_format({'bold': True,  'align': 'center','bg_color':'#D9D9D9'})
 
         worksheet = workbook.add_worksheet()
         worksheet.set_landscape()
 
         internal_types = self._get_internal_types(data)
+        target_move = self._get_target_move_types(data)    
 
         # print title
         worksheet.merge_range(
             'A1:C1', 'Aged Partner Report Detail', title_format)
         worksheet.set_row(0, 30)
-        worksheet.write(1, 0, 'Position Date', header_format)
-        worksheet.write(1, 1,  data['form']['date_from'], short_date_format)
-        worksheet.write(2, 0, 'Type', header_format)
+        worksheet.write(1, 0, 'Position Date', parameter_format)
+        worksheet.write(1, 1,  data['form']['date_from'], short_date_format_L)
+        worksheet.write(2, 0, 'Type', parameter_format)
         worksheet.write(2, 1, ", ".join(internal_types))
-        worksheet.write(1, 3, 'Period Length (days)', header_format)
-        worksheet.write(1, 4, data['form']['period_length'])
+        worksheet.write(3, 0, 'Period Length (days)', parameter_format)
+        worksheet.write(3, 1, data['form']['period_length'],parameter_format_value)
+        worksheet.write(4, 0, 'Target Moves', parameter_format)
+        worksheet.write(4, 1, ", ".join(target_move))
 
         # print header
-        row = 4
+        row = 6
         col = 0
         for key in self.columns:
             worksheet.write(row, col, self.columns[key], header_format)
@@ -94,7 +97,7 @@ class AgedPartnerReportDetail(models.TransientModel):
         report_data = self._get_report_data(data)
 
         # print report
-        row = 5
+        row = 7
         for dict in report_data:
             col = 0
             for key in self.columns:
@@ -145,6 +148,13 @@ class AgedPartnerReportDetail(models.TransientModel):
             return ['receivable', 'payable']
         else:
             return False
+
+    def _get_target_move_types(self, data):
+        res = data['form']['target_move']
+        if res == 'posted':
+            return ['All Posted Entries']
+        else:
+            return ['All Entries']
 
     def _get_report_data(self, data):
         position_date = data['form']['date_from']

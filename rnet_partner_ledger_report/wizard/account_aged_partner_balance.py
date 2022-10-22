@@ -17,6 +17,7 @@ class AccountAgedPartnerBalance(models.TransientModel):
 
     data_level = fields.Selection([
         ('summary', 'Summary'),
+        ('summaryarap', 'Summary by Invoice/Bill'),   
         ('detail', 'Detail'),
         ('detailhistory', 'Detail History')
     ], required=True, default='summary')
@@ -47,8 +48,16 @@ class AccountAgedPartnerBalance(models.TransientModel):
 
         selected_partner_ids = [p.id for p in self.partner_ids]
 
+      #  kay_val_dict = dict(self.target_move)
+      #  _logger.info("========111111111111111==========")
+        target_move_text = dict(self.fields_get(allfields=['target_move'])['target_move']['selection'])[self.target_move]
+      #  _logger.info("========xxxxxxxxxxx==========")
+      #  _logger.info(kay_val_dict)
+      #  _logger.info("==========xxxxxxxx========")  
+
         data['form'] = ({
             'target_move': self.target_move,
+            'target_move_text': target_move_text,
             'result_selection': self.result_selection,
             'period_length': self.period_length,
             'journal_ids': [a.id for a in self.env['account.journal'].search([])],
@@ -68,16 +77,26 @@ class AccountAgedPartnerBalance(models.TransientModel):
         )
         data['form']['used_context'] = used_context
         data['form'].update(res)
+
+        _logger.info("========xxxxxxxxxxx==========")
+        _logger.info(self.data_level)
+        _logger.info("==========xxxxxxxx========")  
+         
         if not self._context.get('report_type') == 'excel':
-            if self.data_level in ('detail','detailhistory'):
+            if self.data_level in ('summaryarap','detail','detailhistory'):
                 raise UserError(
                     _('Laporan Aged Partner Balance level detail tidak dapat ditampilkan di berkas pdf.'))
             return self.env.ref('bi_partner_ledger_report.action_aged_partner_balance_report').with_context(
                 landscape=True).report_action(self, data=data)
         else:
             if self.data_level in ('detail','detailhistory'):
+                _logger.info("===============>"+"rnet.aged_partner_report_detail")  
                 return self.env['rnet.aged_partner_report_detail'].to_excel(data)
+            elif self.data_level=='summaryarap':
+                _logger.info("===============>"+"rnet.aged_partner_report_byarap") 
+                return self.env['rnet.aged_partner_report_byarap'].to_excel(data)               
             else:
+                _logger.info("===============>"+"Aged Partner Balance") 
                 filename = 'Aged Partner Balance.xls'
                 workbook = xlwt.Workbook()
                 worksheet = workbook.add_sheet('Sheet 1')
