@@ -16,10 +16,11 @@ class AccountAgedPartnerBalance(models.TransientModel):
     _inherit = 'bi.account.aged.partner.balance'
 
     data_level = fields.Selection([
-        ('summary', 'Summary'),
-        ('summaryarap', 'Summary by Invoice/Bill'),   
+        ('summary', 'Aged Partner Balance by Partner'),
+        ('summaryarap', 'Aged Partner Balance by AR/AP'),   
+        ('summaryaraphistory', 'Aged Partner Balance by AR/AP (History)'),   
         ('detail', 'Detail'),
-        ('detailhistory', 'Detail History')
+        ('detailhistory', 'Detail (History)')
     ], required=True, default='summary')
 
     partner_ids = fields.Many2many('res.partner', string='Partner')
@@ -51,6 +52,7 @@ class AccountAgedPartnerBalance(models.TransientModel):
       #  kay_val_dict = dict(self.target_move)
       #  _logger.info("========111111111111111==========")
         target_move_text = dict(self.fields_get(allfields=['target_move'])['target_move']['selection'])[self.target_move]
+        data_level_text = dict(self.fields_get(allfields=['data_level'])['data_level']['selection'])[self.data_level]
       #  _logger.info("========xxxxxxxxxxx==========")
       #  _logger.info(kay_val_dict)
       #  _logger.info("==========xxxxxxxx========")  
@@ -63,6 +65,7 @@ class AccountAgedPartnerBalance(models.TransientModel):
             'journal_ids': [a.id for a in self.env['account.journal'].search([])],
             'date_from': self.date_from,
             'data_level': self.data_level,
+            'data_level_text': data_level_text,
             'selected_partner_ids': selected_partner_ids,
         })
         used_context.update(
@@ -78,23 +81,27 @@ class AccountAgedPartnerBalance(models.TransientModel):
         data['form']['used_context'] = used_context
         data['form'].update(res)
 
-        _logger.info("========xxxxxxxxxxx==========")
-        _logger.info(self.data_level)
-        _logger.info("==========xxxxxxxx========")  
+        # _logger.info("========xxxxxxxxxxx==========")
+        # _logger.info(self.data_level)
+        # _logger.info("==========xxxxxxxx========")  
          
         if not self._context.get('report_type') == 'excel':
-            if self.data_level in ('summaryarap','detail','detailhistory'):
+            if self.data_level in ('summary','summaryarap','summaryaraphistory','detail','detailhistory'):
                 raise UserError(
-                    _('Laporan Aged Partner Balance level detail tidak dapat ditampilkan di berkas pdf.'))
+                    _('Print pdf not available, try print to excel.'))
             return self.env.ref('bi_partner_ledger_report.action_aged_partner_balance_report').with_context(
                 landscape=True).report_action(self, data=data)
         else:
-            if self.data_level in ('detail','detailhistory'):
+            if self.data_level == ('summary'):
+                _logger.info("===============>"+"rnet.aged_partner_report_summary")  
+                return self.env['rnet.aged_partner_report_summary'].to_excel(data)
+            elif self.data_level in ('summaryarap','summaryaraphistory'):
+                _logger.info("===============>"+"rnet.aged_partner_report_byarap") 
+                return self.env['rnet.aged_partner_report_byarap'].to_excel(data)  
+            elif self.data_level in ('detail','detailhistory'):
                 _logger.info("===============>"+"rnet.aged_partner_report_detail")  
                 return self.env['rnet.aged_partner_report_detail'].to_excel(data)
-            elif self.data_level=='summaryarap':
-                _logger.info("===============>"+"rnet.aged_partner_report_byarap") 
-                return self.env['rnet.aged_partner_report_byarap'].to_excel(data)               
+             
             else:
                 _logger.info("===============>"+"Aged Partner Balance") 
                 filename = 'Aged Partner Balance.xls'
@@ -121,18 +128,19 @@ class AccountAgedPartnerBalance(models.TransientModel):
                 worksheet.write(
                     3, 3, 'All Posted Entries' if self.target_move == 'posted' else 'All Entries')
                 worksheet.write(5, 0, 'Partners', style=style_table_header)
-                worksheet.write(5, 1, 'Over due', style=style_table_header)
-                worksheet.write(5, 2, res['4']['name'],
+                worksheet.write(5, 1, 'Unreconsile Payment', style=style_table_header)
+                worksheet.write(5, 2, 'Over due', style=style_table_header)
+                worksheet.write(5, 3, res['4']['name'],
                                 style=style_table_header)
-                worksheet.write(5, 3, res['3']['name'],
+                worksheet.write(5, 4, res['3']['name'],
                                 style=style_table_header)
-                worksheet.write(5, 4, res['2']['name'],
+                worksheet.write(5, 5, res['2']['name'],
                                 style=style_table_header)
-                worksheet.write(5, 5, res['1']['name'],
+                worksheet.write(5, 6, res['1']['name'],
                                 style=style_table_header)
-                worksheet.write(5, 6, res['0']['name'],
+                worksheet.write(5, 7, res['0']['name'],
                                 style=style_table_header)
-                worksheet.write(5, 7, "Total")
+                worksheet.write(5, 8, "Total")
                 row = 6
                 col = 0
                 report_values = self.env['report.bi_partner_ledger_report.bi_report_agedpartnerbalance']._get_report_values(
@@ -141,29 +149,30 @@ class AccountAgedPartnerBalance(models.TransientModel):
                     worksheet.write(row, col, 'Account Total',
                                     style=style_table_header)
                     worksheet.write(
-                        row, col + 1, report_values['get_direction'][6], style=style_table_header)
+                        row, col + 2, report_values['get_direction'][6], style=style_table_header)
                     worksheet.write(
-                        row, col + 2, report_values['get_direction'][4], style=style_table_header)
+                        row, col + 3, report_values['get_direction'][4], style=style_table_header)
                     worksheet.write(
-                        row, col + 3, report_values['get_direction'][3], style=style_table_header)
+                        row, col + 4, report_values['get_direction'][3], style=style_table_header)
                     worksheet.write(
-                        row, col + 4, report_values['get_direction'][2], style=style_table_header)
+                        row, col + 5, report_values['get_direction'][2], style=style_table_header)
                     worksheet.write(
-                        row, col + 5, report_values['get_direction'][1], style=style_table_header)
+                        row, col + 6, report_values['get_direction'][1], style=style_table_header)
                     worksheet.write(
-                        row, col + 6, report_values['get_direction'][0], style=style_table_header)
+                        row, col + 7, report_values['get_direction'][0], style=style_table_header)
                     worksheet.write(
-                        row, col + 7, report_values['get_direction'][5], style=style_table_header)
+                        row, col + 8, report_values['get_direction'][5], style=style_table_header)
                 row += 1
                 for partner in report_values['get_partner_lines']:
                     worksheet.write(row, col, partner['name'])
-                    worksheet.write(row, col + 1, partner['direction'])
-                    worksheet.write(row, col + 2, partner['4'])
-                    worksheet.write(row, col + 3, partner['3'])
-                    worksheet.write(row, col + 4, partner['2'])
-                    worksheet.write(row, col + 5, partner['1'])
-                    worksheet.write(row, col + 6, partner['0'])
-                    worksheet.write(row, col + 7, partner['total'])
+
+                    worksheet.write(row, col + 2, partner['direction'])
+                    worksheet.write(row, col + 3, partner['4'])
+                    worksheet.write(row, col + 4, partner['3'])
+                    worksheet.write(row, col + 5, partner['2'])
+                    worksheet.write(row, col + 6, partner['1'])
+                    worksheet.write(row, col + 7, partner['0'])
+                    worksheet.write(row, col + 8, partner['total'])
                     row += 1
 
                 fp = io.BytesIO()

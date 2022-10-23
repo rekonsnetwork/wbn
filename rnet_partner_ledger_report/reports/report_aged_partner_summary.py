@@ -11,25 +11,24 @@ _logger = logging.getLogger(__name__)
 
 
 class AgedPartnerReportDetail(models.TransientModel):
-    _name = 'rnet.aged_partner_report_byarap'
-    _description = 'Report Aged Partner Balance By AR/AP'
+    _name = 'rnet.aged_partner_report_summary'
+    _description = 'Report Aged Partner Balance'
     _logger.info(_description)
 
-    columns = OrderedDict([('company', 'Company'),
-                            ('partner_code', 'Partner Code'),
+    columns = OrderedDict([  ('partner_code', 'Partner Code'),
                             ('partner', 'Partner Name'),
                             ('internal_type', 'Internal Type'),
-                            ('journal_name', 'Journal'),
-                            ('journal_no', 'Journal No'),
-                            ('journal_state', 'Jourbal State'),
-                            ('invoice_no', 'Invoice No'),
-                            ('date', 'Date'),
-                            ('date_maturity', 'Due Date'),
-                            ('age', 'Age (days)'),
-                            ('age_category', 'Age Category'),
+                            # ('journal_name', 'Journal'),
+                            # ('journal_no', 'Journal No'),
+                            # ('journal_state', 'Jourbal State'),
+                            # ('invoice_no', 'Invoice No'),
+                            # ('date', 'Date'),
+                            # ('date_maturity', 'Due Date'),
+                            # ('age', 'Age (days)'),
+                            # ('age_category', 'Age Category'),
                             ('currency', 'Currency'),
-                            ('amount', 'Amount'),
-                            ('amount_paid', 'Amount Paid'),
+                            # ('amount', 'Amount'),
+                            # ('amount_paid', 'Amount Paid'),
                             ('unreconsiled_payment', 'Unreconsiled Payment'),
                             ('over_due', 'Over Due'),
                             ('age_1', 'age1-age2'),
@@ -38,8 +37,8 @@ class AgedPartnerReportDetail(models.TransientModel):
                             ('age_4', 'age4-age5'),
                             ('age_5', '+age'),
                             ('balance', 'Total'),
-                            ('invoice_origin', 'Invoice Origin'),
-                            ('invoice_manual_delivery_no', 'DO'),
+                            # ('invoice_origin', 'Invoice Origin'),
+                            # ('invoice_manual_delivery_no', 'DO'),
                            ])
 
     def to_excel(self, data):
@@ -47,6 +46,7 @@ class AgedPartnerReportDetail(models.TransientModel):
         workbook = xlsxwriter.Workbook(output)
 
         # cell formatters
+
         title_format = workbook.add_format({'align': 'left', 'valign': 'vcenter', 'bold': True, 'font_size': 16})
 
         parameter_format = workbook.add_format({'bold': True,  'align': 'left'})
@@ -69,13 +69,8 @@ class AgedPartnerReportDetail(models.TransientModel):
         target_move = data['form']['target_move']
 
         # print title
-
-        report_title='Aged Partner Report By AR/AP'
-        if data['form']['data_level']=="summaryaraphistory":
-            report_title='Aged Partner Report By AR/AP History'
-
         worksheet.merge_range(
-            'A1:C1', report_title, title_format)
+            'A1:C1', 'Aged Partner Report', title_format)
         worksheet.set_row(0, 30)
         worksheet.write(1, 0, 'Position Date', parameter_format)
         worksheet.write(1, 1,  data['form']['date_from'], parameter_format_date)
@@ -155,25 +150,20 @@ class AgedPartnerReportDetail(models.TransientModel):
 
                 col += 1
             row += 1
+        
+        worksheet.write(row, 4, total["unreconsiled_payment"], total_float_format)
+        worksheet.write(row, 5, total["over_due"], total_float_format)
+        worksheet.write(row, 6, total["age_1"], total_float_format)
+        worksheet.write(row, 7, total["age_2"], total_float_format)
+        worksheet.write(row, 8, total["age_3"], total_float_format)
+        worksheet.write(row, 9, total["age_4"], total_float_format)
+        worksheet.write(row, 10, total["age_5"], total_float_format)
+        worksheet.write(row, 11, total["balance"], total_float_format)
 
-        worksheet.write(row, 15, total["unreconsiled_payment"], total_float_format)
-        worksheet.write(row, 16, total["over_due"], total_float_format)
-        worksheet.write(row, 17, total["age_1"], total_float_format)
-        worksheet.write(row, 18, total["age_2"], total_float_format)
-        worksheet.write(row, 19, total["age_3"], total_float_format)
-        worksheet.write(row, 20, total["age_4"], total_float_format)
-        worksheet.write(row, 21, total["age_5"], total_float_format)
-        worksheet.write(row, 22, total["balance"], total_float_format)            
-    
         workbook.close()
 
-        exportfilename='Aged Partner Balance By AR AP.xls'
-        if data['form']['data_level']=="summaryaraphistory":
-           exportfilename='Aged Partner Balance By AR AP History.xls'      
-
-   
         export_id = self.env['excel.report'].create({'excel_file': base64.encodestring(
-            output.getvalue()), 'file_name': exportfilename})
+            output.getvalue()), 'file_name': 'Aged Partner Balance.xls'})
         res = {
             'view_mode': 'form',
             'res_id': export_id.id,
@@ -217,33 +207,33 @@ class AgedPartnerReportDetail(models.TransientModel):
         query = """
             Select
             --    a.company_id,
-                a.company,	
+            --    a.company,	
                 a.partner_code,
                 a.partner,
                 a.internal_type,               
             --   a.journal_id,
-                a.journal_name,	
-                a.journal_no,
-                a.journal_state,
+            --    a.journal_name,	
+            --    a.journal_no,
+            --    a.journal_state,
             --    a.journal_item_id,
-                a.invoice_no,
-                a.date,
-                a.date_maturity, 
-                a.age,
-                a.age_category,
-                a.currency,
-                a.amount,
-                a.amount_paid,
-                case when a.age_category is null then a.balance else 0 end as unreconsiled_payment,
-                case when a.age_category<0 then a.balance else 0 end as over_due,
-                case when a.age_category=%s*1 then a.balance else 0 end as age_1,
-                case when a.age_category=%s*2 then a.balance else 0 end as age_2,
-                case when a.age_category=%s*3 then a.balance else 0 end as age_3,
-                case when a.age_category=%s*4 then a.balance else 0 end as age_4,
-                case when a.age_category>%s*4 then a.balance else 0 end as age_5,	
-                a.balance,		
-                a.invoice_origin,
-                a.invoice_manual_delivery_no	
+            --    a.invoice_no,
+            --    a.date,
+            --    a.date_maturity, 
+            --    a.age,
+            --    a.age_category,
+                 a.currency,
+            --   a.amount,
+            --    a.amount_paid,
+                sum(case when a.age_category is null then a.balance else 0 end) as unreconsiled_payment,
+                sum(case when a.age_category<0 then a.balance else 0 end) as over_due,
+                sum(case when a.age_category=%s*1 then a.balance else 0 end) as age_1,
+                sum(case when a.age_category=%s*2 then a.balance else 0 end) as age_2,
+                sum(case when a.age_category=%s*3 then a.balance else 0 end) as age_3,
+                sum(case when a.age_category=%s*4 then a.balance else 0 end) as age_4,
+                sum(case when a.age_category>%s*4 then a.balance else 0 end) as age_5,	
+                sum(a.balance) as balance		
+            --    a.invoice_origin,
+            --    a.invoice_manual_delivery_no	
             from
             (
             Select 
@@ -279,7 +269,7 @@ class AgedPartnerReportDetail(models.TransientModel):
                 left join 
                     (
                     Select a.debit_move_id, 
-                            --sum(b.balance) as payment_amount
+                    		--sum(b.balance) as payment_amount
 							sum(a.amount) as payment_amount
                     from
                         account_partial_reconcile a
@@ -288,36 +278,33 @@ class AgedPartnerReportDetail(models.TransientModel):
                 """
         if target_move=="posted":                       
             query = query + " and b.journal_state='posted' "
-
-        query = query + """
+            
+        query = query + """                        
                     group by a.debit_move_id	
-                    ) pyr on pyr.debit_move_id=a.journal_item_id	and a.internal_type='receivable'
+                    ) pyr on pyr.debit_move_id=a.journal_item_id and a.internal_type='receivable'
                 left join 
                     (
-                    Select a.credit_move_id,
+                    Select a.credit_move_id, 
                             --sum(b.balance) as payment_amount
 							-sum(a.amount) as payment_amount
                     from
                         account_partial_reconcile a
                         left join vw_account_move_line b on b.journal_item_id=a.debit_move_id
-                        where b.date<=cast(%s as TIMESTAMP) 
+                        where b.date<=cast(%s as TIMESTAMP)
                 """
         if target_move=="posted":                       
             query = query + " and b.journal_state='posted' "
-        query = query + """
+        query = query + """                        
                     group by a.credit_move_id	
                     ) pyp on pyp.credit_move_id=a.journal_item_id	and a.internal_type='payable'
             where 
                 ((a.internal_type='receivable' and a.debit>0) or (a.internal_type='payable' and a.credit>0))
                 and a.date<=cast(%s as TIMESTAMP)
             """      
-
         if target_move=="posted":
             query = query + " and a.journal_state='posted' "
-        
 
-        if data_level=="summaryarap":
-            query = query + " and a.balance-coalesce((coalesce(pyr.payment_amount,pyp.payment_amount)),0)<>0 " 
+        query = query + " and a.balance-coalesce((coalesce(pyr.payment_amount,pyp.payment_amount)),0)<>0 " 
 
         if internal_types:
             types = ','.join("'{0}'".format(t) for t in internal_types)
@@ -330,7 +317,6 @@ class AgedPartnerReportDetail(models.TransientModel):
             ids = ", ". join(ids)
             query = query + \
                 " and a.partner_id in (" + ids + ")"                
-
      
         query = query + """
 
@@ -365,15 +351,14 @@ class AgedPartnerReportDetail(models.TransientModel):
 														(a.internal_type='payable' and a.journal_item_id=b.debit_move_id) 
             where 
                 ((a.internal_type='receivable' and a.credit>0) or (a.internal_type='payable' and a.debit>0))
-                and b.id is null
                 and a.date<=cast(%s as TIMESTAMP)
-
+                and b.id is null
             """  
-        if target_move=="posted":
-            query = query + " and a.journal_state='posted' "
 
-        if data_level=="summaryarap":
-            query = query + " and coalesce(a.balance,0)<>0 "                 
+        if target_move=="posted":
+            query = query + " and a.journal_state='posted' "    
+
+        query = query + " and coalesce(a.balance,0)<>0 "                 
 
         if internal_types:
             types = ','.join("'{0}'".format(t) for t in internal_types)
@@ -389,12 +374,21 @@ class AgedPartnerReportDetail(models.TransientModel):
  
 
         query = query + """
-                ) a    
+                ) a   
+            group by 
+                a.company_id,
+                a.company,
+                a.partner_id,
+                a.partner_code,
+                a.partner,
+                a.internal_type,  
+                a.currency         
             order by
                 a.company,
                 a.partner,
-                a.internal_type,                
-                a.date
+                a.internal_type,
+                a.currency              
+             
         """
 
         params = (period_length, period_length, period_length, period_length, period_length, 

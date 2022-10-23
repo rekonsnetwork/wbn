@@ -59,33 +59,44 @@ class AgedPartnerReportDetail(models.TransientModel):
         workbook = xlsxwriter.Workbook(output)
 
         # cell formatters
-        short_date_format = workbook.add_format({'num_format': 'dd-mmm-yyyy', 'align': 'center'})
-        short_date_format_L = workbook.add_format({'num_format': 'dd-mmm-yyyy', 'align': 'left'})    
-        long_date_format = workbook.add_format({'num_format': 'dd-mmm-yyyy HH:mm:ss', 'align': 'center'})
-        float_format = workbook.add_format({'num_format': '#,##0.00'})
         title_format = workbook.add_format({'align': 'left', 'valign': 'vcenter', 'bold': True, 'font_size': 16})
+
         parameter_format = workbook.add_format({'bold': True,  'align': 'left'})
         parameter_format_value = workbook.add_format({'align': 'left'})
-        header_format = workbook.add_format({'bold': True,  'align': 'center','bg_color':'#D9D9D9'})
+        parameter_format_date = workbook.add_format({'num_format': 'dd-mmm-yyyy', 'align': 'left'})  
+
+        header_format = workbook.add_format({'bold': True,  'align': 'center','bg_color':'#D9D9D9','border': 1})
+
+        detail_short_date_format = workbook.add_format({'num_format': 'dd-mmm-yyyy', 'align': 'center','border': 1})  
+        detail_long_date_format = workbook.add_format({'num_format': 'dd-mmm-yyyy HH:mm:ss', 'align': 'center','border': 1})
+        detail_float_format = workbook.add_format({'num_format': '#,##0.00','border': 1})
+        detail_general_format = workbook.add_format({'border': 1})
+
+        total_float_format = workbook.add_format({'num_format': '#,##0.00','border': 1,'bg_color':'#D9D9D9','bold': True})   
 
         worksheet = workbook.add_worksheet()
         worksheet.set_landscape()
 
-        internal_types = self._get_internal_types(data)
-        target_move = self._get_target_move_types(data)    
+        internal_types = self._get_internal_types(data)  
+        target_move = data['form']['target_move']
 
         # print title
+
+        report_title='Aged Partner Report Detail'
+        if data['form']['data_level']=="detailhistory":
+            report_title='Aged Partner Report Detail History'
+
         worksheet.merge_range(
-            'A1:C1', 'Aged Partner Report Detail', title_format)
+            'A1:C1', report_title, title_format)
         worksheet.set_row(0, 30)
         worksheet.write(1, 0, 'Position Date', parameter_format)
-        worksheet.write(1, 1,  data['form']['date_from'], short_date_format_L)
+        worksheet.write(1, 1,  data['form']['date_from'], parameter_format_date)
         worksheet.write(2, 0, 'Type', parameter_format)
         worksheet.write(2, 1, ", ".join(internal_types))
         worksheet.write(3, 0, 'Period Length (days)', parameter_format)
         worksheet.write(3, 1, data['form']['period_length'],parameter_format_value)
         worksheet.write(4, 0, 'Target Moves', parameter_format)
-        worksheet.write(4, 1, ", ".join(target_move))
+        worksheet.write(4, 1, data['form']['target_move_text'])
 
         # print header
         row = 6
@@ -98,27 +109,51 @@ class AgedPartnerReportDetail(models.TransientModel):
 
         # print report
         row = 7
+
+        total={}    
+        total["debit"]=0
+        total["credit"]=0
+        total["balance"]=0
+
+
         for dict in report_data:
             col = 0
             for key in self.columns:
                 value = dict[key]
                 if isinstance(value, (datetime.datetime)):
-                    worksheet.write(row, col, value, long_date_format)
+                    worksheet.write(row, col, value, detail_long_date_format)
                 elif isinstance(value, (datetime.date)):
-                    worksheet.write(row, col, value, short_date_format)
+                    worksheet.write(row, col, value, detail_short_date_format)
                 elif isinstance(value, (float)):
-                    worksheet.write(row, col, value, float_format)
+                    worksheet.write(row, col, value, detail_float_format)
                 else:
-                    worksheet.write(row, col, value)
+                    worksheet.write(row, col, value, detail_general_format)
                 worksheet.set_column(
                     col, col, self._estimate_col_length(value))
+
+                if key=="debit":
+                    total[key]+= value    
+                if key=="credit":
+                    total[key]+= value                        
+                if key=="balance":
+                    total[key]+= value  
+                   
                 col += 1
             row += 1
 
+        worksheet.write(row, 9, total["debit"], total_float_format)
+        worksheet.write(row, 10, total["credit"], total_float_format)
+        worksheet.write(row, 11, total["balance"], total_float_format)
+
+
         workbook.close()
 
+        exportfilename='Aged Partner Balance Detail.xls'
+        if data['form']['data_level']=="detailhistory":
+           exportfilename='Aged Partner Balance Detail History.xls'         
+
         export_id = self.env['excel.report'].create({'excel_file': base64.encodestring(
-            output.getvalue()), 'file_name': 'Aged Partner Balance Detail.xls'})
+            output.getvalue()), 'file_name': exportfilename})
         res = {
             'view_mode': 'form',
             'res_id': export_id.id,
@@ -149,19 +184,13 @@ class AgedPartnerReportDetail(models.TransientModel):
         else:
             return False
 
-    def _get_target_move_types(self, data):
-        res = data['form']['target_move']
-        if res == 'posted':
-            return ['All Posted Entries']
-        else:
-            return ['All Entries']
-
     def _get_report_data(self, data):
         position_date = data['form']['date_from']
         period_length = data['form']['period_length']
         selected_partner_ids = data['form']['selected_partner_ids']
         internal_types = self._get_internal_types(data)
         data_level = data['form']['data_level']
+        target_move = data['form']['target_move']    
 
         query = """
             select
@@ -216,10 +245,13 @@ class AgedPartnerReportDetail(models.TransientModel):
             from
                 vw_account_move_line
             where
-                date <= %s
+                date <= cast(%s as TIMESTAMP)
             """
         params = (position_date, position_date, position_date, period_length, period_length,
                   position_date, period_length, period_length, position_date)
+
+        if target_move=="posted":
+            query = query + " and journal_state='posted' "                 
 
         if internal_types:
             types = ','.join("'{0}'".format(t) for t in internal_types)
@@ -240,9 +272,10 @@ class AgedPartnerReportDetail(models.TransientModel):
         query = query + """
             order by
                 company,
-                internal_type,
                 partner,
+                internal_type,              
                 full_reconcile_id,
+                date,
                 journal_create_date
         """
 

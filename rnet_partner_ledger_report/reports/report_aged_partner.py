@@ -98,6 +98,35 @@ class BiReportAgedPartnerBalance(models.AbstractModel):
 
         return self.env.cr.fetchall()
 
+    # Pisahkan fungsi undue amount
+    def _get_unreconsile_paymentamount(self, move_state, account_type, date_from, partner_ids, company_ids):
+        query = '''SELECT l.id
+            FROM 
+               account_move_line AS l, 
+               account_account, 
+               account_move am,
+               account_partial_reconcile b
+            WHERE (l.account_id = account_account.id) AND (l.move_id = am.id)
+                AND (am.state IN %s)
+                AND (account_account.internal_type IN %s)
+                AND (COALESCE(l.date_maturity,l.date) >= %s)\
+                AND ((l.partner_id IN %s) OR (l.partner_id IS NULL))
+                AND (l.date <= %s)
+                AND ((a.internal_type='receivable' and a.credit>0) or (a.internal_type='payable' and a.debit>0))
+                AND l.id=b.credit_move_id AND b.id is null
+                AND l.company_id IN %s'''
+        self.env.cr.execute(query, (tuple(move_state), tuple(
+            account_type), date_from, tuple(partner_ids), date_from, tuple(company_ids)))
+
+        # _logger.info("=== get undue amount ===")
+        # _logger.info(query)
+        # _logger.info((tuple(move_state), tuple(
+        #     account_type), date_from, tuple(partner_ids), date_from, tuple(company_ids)))
+        # _logger.info("======")
+
+        return self.env.cr.fetchall()
+
+
     # Terpaksa harus override semua fungsi + ganti signature
     def _get_partner_move_lines(self, account_type, date_from, target_move, period_length, selected_partner_ids):
         periods = {}
