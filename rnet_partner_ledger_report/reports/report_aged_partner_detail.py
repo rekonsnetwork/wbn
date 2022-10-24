@@ -14,7 +14,7 @@ class AgedPartnerReportDetail(models.TransientModel):
     _name = 'rnet.aged_partner_report_detail'
     _description = 'Report Aged Partner Balance Detail'
 
-    columns = OrderedDict([('company', 'Company'),
+    columns = OrderedDict([
                            ('internal_type', 'Internal Type'),
                            ('partner_code', 'Partner Code'),
                            ('partner', 'Partner'),
@@ -26,6 +26,8 @@ class AgedPartnerReportDetail(models.TransientModel):
                            ('debit', 'Debit'),
                            ('credit', 'Credit'),
                            ('balance', 'Balance'),
+                           ('debit_reconsiled', 'Debit Reconsiled'),
+                           ('credit_reconsiled', 'Credit Reconsiled'),                           
                            ('full_reconcile_id', 'Full Reconcile Id'),
                            ('full_reconcile', 'Full Reconcile'),
                            ('reconciled', 'Reconciled'),
@@ -141,9 +143,9 @@ class AgedPartnerReportDetail(models.TransientModel):
                 col += 1
             row += 1
 
-        worksheet.write(row, 9, total["debit"], total_float_format)
-        worksheet.write(row, 10, total["credit"], total_float_format)
-        worksheet.write(row, 11, total["balance"], total_float_format)
+        worksheet.write(row, 8, total["debit"], total_float_format)
+        worksheet.write(row, 9, total["credit"], total_float_format)
+        worksheet.write(row, 10, total["balance"], total_float_format)
 
 
         workbook.close()
@@ -194,95 +196,132 @@ class AgedPartnerReportDetail(models.TransientModel):
 
         query = """
             select
-                company,
-                internal_type,
-                partner_code,
-                partner,
-                date,
-                date_maturity,
+                a.company,
+                a.internal_type,
+                a.partner_code,
+                a.partner,
+                a.date,
+                a.date_maturity,
                 (extract(day
             from
-                date_maturity - cast(%s as TIMESTAMP) )) as age,
+                a.date_maturity - cast(%s as TIMESTAMP) )) as age,
                 case
                     when (extract(day
                 from
-                    date_maturity - cast(%s as TIMESTAMP) )) < 0 then
-                    (floor((extract(day from date_maturity - cast(%s as TIMESTAMP) )) / %s)) * %s
+                    a.date_maturity - cast(%s as TIMESTAMP) )) < 0 then
+                    (floor((extract(day from a.date_maturity - cast(%s as TIMESTAMP) )) / %s)) * %s
                     else
-                    (floor((extract(day from date_maturity - cast(%s as TIMESTAMP) )) / %s) + 1) * %s
+                    (floor((extract(day from a.date_maturity - cast(%s as TIMESTAMP) )) / %s) + 1) * %s
                 end as age_category,
-                journal_name,
-                debit,
-                credit,
-                balance,
-                full_reconcile_id,
-                full_reconcile,
+                a.journal_name,
+                a.debit,
+                a.credit,
+                a.balance,
+				pyd.reconsiled_amount as debit_reconsiled,
+				pyc.reconsiled_amount as credit_reconsiled,                
+                a.full_reconcile_id,
+                a.full_reconcile,
                 --reconcile_date,
-                reconciled,
-                account_code,
-                account_name,
+                a.reconciled,
+                a.account_code,
+                a.account_name,
                 --jurnal_item_label,
-                currency,
-                journal_no,
-                journal_date,
-                "ref",
-                ref2,
-                ref3,
-                journal_state,
-                reverse_date,
-                reverse_entry_id,
-                invoice_no,
-                invoice_type,
-                invoice_origin,
-                invoice_reference,
-                invoice_manual_delivery_no,
-                invoice_date,
-                invoice_date_due,
-                payment_no,
-                payment_type,
-                payment_state,
-                journal_create_date
+                a.currency,
+                a.journal_no,
+                a.journal_date,
+                a."ref",
+                a.ref2,
+                a.ref3,
+                a.journal_state,
+                a.reverse_date,
+                a.reverse_entry_id,
+                a.invoice_no,
+                a.invoice_type,
+                a.invoice_origin,
+                a.invoice_reference,
+                a.invoice_manual_delivery_no,
+                a.invoice_date,
+                a.invoice_date_due,
+                a.payment_no,
+                a.payment_type,
+                a.payment_state,
+                a.journal_create_date
             from
-                vw_account_move_line
+                vw_account_move_line a
+                left join 
+                    (
+                    Select a.debit_move_id, 
+                            --sum(b.balance) as payment_amount
+							sum(a.amount) as reconsiled_amount
+                    from
+                        account_partial_reconcile a
+                        left join vw_account_move_line b on b.journal_item_id=a.credit_move_id
+                        where b.date<=cast(%s as TIMESTAMP) 
+                """
+        if target_move=="posted":                       
+            query = query + " and b.journal_state='posted' "
+
+        query = query + """
+                    group by a.debit_move_id	
+                    ) pyd on pyd.debit_move_id=a.journal_item_id	
+                left join 
+                    (
+                    Select a.credit_move_id,
+                            --sum(b.balance) as payment_amount
+							-sum(a.amount) as reconsiled_amount
+                    from
+                        account_partial_reconcile a
+                        left join vw_account_move_line b on b.journal_item_id=a.debit_move_id
+                        where b.date<=cast(%s as TIMESTAMP) 
+                """
+        if target_move=="posted":                       
+            query = query + " and b.journal_state='posted' "
+        query = query + """
+                    group by a.credit_move_id	
+                    ) pyc on pyc.credit_move_id=a.journal_item_id	
             where
-                date <= cast(%s as TIMESTAMP)
+                a.date <= cast(%s as TIMESTAMP)
             """
         params = (position_date, position_date, position_date, period_length, period_length,
-                  position_date, period_length, period_length, position_date)
+                  position_date, period_length, period_length, position_date, position_date, position_date)
 
         if target_move=="posted":
-            query = query + " and journal_state='posted' "                 
+            query = query + " and a.journal_state='posted' "                 
 
         if internal_types:
             types = ','.join("'{0}'".format(t) for t in internal_types)
             query = query + \
-                " and internal_type in (" + types + ")"
+                " and a.internal_type in (" + types + ")"
 
         if selected_partner_ids:
             ids = [str(int) for int in selected_partner_ids]
             ids = ", ". join(ids)
             query = query + \
-                " and partner_id in (" + ids + ")"
+                " and a.partner_id in (" + ids + ")"
+
+        # if data_level=="detail":
+        #     query = query + \
+        #     " and full_reconcile_id is null"        
 
         if data_level=="detail":
             query = query + \
-            " and full_reconcile_id is null"        
-
+            " and  (pyd.reconsiled_amount is null and pyc.reconsiled_amount is null ) "
 
         query = query + """
             order by
-                company,
-                partner,
-                internal_type,              
-                full_reconcile_id,
-                date,
-                journal_create_date
+                a.company,
+                a.partner,
+                a.internal_type,              
+                a.full_reconcile_id,
+                a.date,
+                a.journal_create_date
         """
 
-        # _logger.info("==================")
-        # _logger.info(query)
-        # _logger.info(params)
-        # _logger.info("==================")
+        _logger.info("==================")
+        _logger.info(query)
+        _logger.info(params)
+        _logger.info(query % params)
+        _logger.info("==================")
 
         self.env.cr.execute(query, params)
         return self.env.cr.dictfetchall()

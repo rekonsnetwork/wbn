@@ -15,7 +15,7 @@ class AgedPartnerReportDetail(models.TransientModel):
     _description = 'Report Aged Partner Balance'
     _logger.info(_description)
 
-    columns = OrderedDict([  ('partner_code', 'Partner Code'),
+    columns = OrderedDict([ ('partner_code', 'Partner Code'),
                             ('partner', 'Partner Name'),
                             ('internal_type', 'Internal Type'),
                             # ('journal_name', 'Journal'),
@@ -31,6 +31,8 @@ class AgedPartnerReportDetail(models.TransientModel):
                             # ('amount_paid', 'Amount Paid'),
                             ('unreconsiled_payment', 'Unreconsiled Payment'),
                             ('over_due', 'Over Due'),
+                            ('not_due', 'Not Due'),   
+                            ('age_0', '< 0'),   
                             ('age_1', 'age1-age2'),
                             ('age_2', 'age2-age3'),
                             ('age_3', 'age3-age4'),
@@ -109,6 +111,8 @@ class AgedPartnerReportDetail(models.TransientModel):
         total={}    
         total["unreconsiled_payment"]=0
         total["over_due"]=0
+        total["not_due"]=0
+        total["age_0"]=0
         total["age_1"]=0
         total["age_2"]=0
         total["age_3"]=0
@@ -134,7 +138,11 @@ class AgedPartnerReportDetail(models.TransientModel):
                 if key=="unreconsiled_payment":
                     total[key]+= value    
                 if key=="over_due":
-                    total[key]+= value                        
+                    total[key]+= value     
+                if key=="not_due":
+                    total[key]+= value     
+                if key=="age_0":
+                    total[key]+= value                         
                 if key=="age_1":
                     total[key]+= value  
                 if key=="age_2":
@@ -153,12 +161,14 @@ class AgedPartnerReportDetail(models.TransientModel):
         
         worksheet.write(row, 4, total["unreconsiled_payment"], total_float_format)
         worksheet.write(row, 5, total["over_due"], total_float_format)
-        worksheet.write(row, 6, total["age_1"], total_float_format)
-        worksheet.write(row, 7, total["age_2"], total_float_format)
-        worksheet.write(row, 8, total["age_3"], total_float_format)
-        worksheet.write(row, 9, total["age_4"], total_float_format)
-        worksheet.write(row, 10, total["age_5"], total_float_format)
-        worksheet.write(row, 11, total["balance"], total_float_format)
+        worksheet.write(row, 6, total["not_due"], total_float_format)        
+        worksheet.write(row, 7, total["age_0"], total_float_format)        
+        worksheet.write(row, 8, total["age_1"], total_float_format)
+        worksheet.write(row, 9, total["age_2"], total_float_format)
+        worksheet.write(row, 10, total["age_3"], total_float_format)
+        worksheet.write(row, 11, total["age_4"], total_float_format)
+        worksheet.write(row, 12, total["age_5"], total_float_format)
+        worksheet.write(row, 13, total["balance"], total_float_format)
 
         workbook.close()
 
@@ -225,7 +235,18 @@ class AgedPartnerReportDetail(models.TransientModel):
             --   a.amount,
             --    a.amount_paid,
                 sum(case when a.age_category is null then a.balance else 0 end) as unreconsiled_payment,
-                sum(case when a.age_category<0 then a.balance else 0 end) as over_due,
+
+                sum(case 
+                    when a.age_category is null then 0 
+                    when a.balance<>0 and a.date<=cast(%s  as TIMESTAMP) and a.date_maturity < cast(%s  as TIMESTAMP) then a.balance 
+                    else 0 
+                end) as over_due,               
+                sum(case 
+                    when a.age_category is null then 0 
+                    when a.balance<>0 and a.date<=cast(%s  as TIMESTAMP) and a.date_maturity >= cast(%s  as TIMESTAMP) then a.balance
+                    else 0
+                end) as not_due,   
+                sum(case when a.age_category<0 then a.balance else 0 end) as age_0,
                 sum(case when a.age_category=%s*1 then a.balance else 0 end) as age_1,
                 sum(case when a.age_category=%s*2 then a.balance else 0 end) as age_2,
                 sum(case when a.age_category=%s*3 then a.balance else 0 end) as age_3,
@@ -251,12 +272,12 @@ class AgedPartnerReportDetail(models.TransientModel):
                 a.invoice_no,
                 a.date,
                 a.date_maturity,                
-                (extract(day from a.date_maturity - cast(%s as TIMESTAMP) )) as age,
+                (extract(day from a.date - cast(%s as TIMESTAMP) )) as age,
                 case
-                    when (extract(day from date_maturity - cast(%s  as TIMESTAMP) )) < 0 then
-                        (floor((extract(day from date_maturity - cast(%s as TIMESTAMP) )) / %s)) * %s
+                    when (extract(day from date - cast(%s  as TIMESTAMP) )) < 0 then
+                        (floor((extract(day from date - cast(%s as TIMESTAMP) )) / %s)) * %s
                     else
-                        (floor((extract(day from date_maturity - cast(%s as TIMESTAMP) )) / %s) + 1) * %s
+                        (floor((extract(day from date - cast(%s as TIMESTAMP) )) / %s) + 1) * %s
                 end as age_category,                                            
                 a.currency,
                 a.balance as amount,
@@ -391,7 +412,8 @@ class AgedPartnerReportDetail(models.TransientModel):
              
         """
 
-        params = (period_length, period_length, period_length, period_length, period_length, 
+        params = (position_date,position_date,position_date,position_date, 
+                    period_length, period_length, period_length, period_length, period_length, 
                     position_date, position_date, position_date, 
                     period_length,period_length,
                     position_date,
