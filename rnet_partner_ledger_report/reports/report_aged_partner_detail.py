@@ -311,7 +311,7 @@ class AgedPartnerReportDetail(models.TransientModel):
 
         if data_level=="detail":
             query = query + \
-            " and  (pyd.reconsiled_amount is null and pyc.reconsiled_amount is null ) "
+            " and  ( (pyd.reconsiled_amount is null and pyc.reconsiled_amount is null) or (a.full_reconcile_id is null)  ) "
 
         query = query + """
             order by
@@ -323,11 +323,11 @@ class AgedPartnerReportDetail(models.TransientModel):
                 a.journal_create_date
         """
 
-        # _logger.info("==================")
+        _logger.info("==================")
         # _logger.info(query)
         # _logger.info(params)
-        # _logger.info(query % params)
-        # _logger.info("==================")
+        _logger.info(query % params)
+        _logger.info("==================")
 
         self.env.cr.execute(query, params)
         return self.env.cr.dictfetchall()

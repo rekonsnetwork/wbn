@@ -252,7 +252,7 @@ class AgedPartnerReportDetail(models.TransientModel):
                 case when a.age_category is null then a.balance else 0 end as unreconsiled_payment,                 
                 case 
                     when a.age_category is null then 0 
-                    when a.balance<>0 and a.date<=cast(%s  as TIMESTAMP) and a.date_maturity >= cast(%s  as TIMESTAMP) then a.balance
+                    when a.balance<>0 and a.date<=cast(%s  as TIMESTAMP) and a.date_maturity > cast(%s  as TIMESTAMP) then a.balance
                     else 0
                 end as not_due,        
                 case when a.age_category=%s*1 then a.balance else 0 end as age_1,
@@ -425,11 +425,11 @@ class AgedPartnerReportDetail(models.TransientModel):
                     period_length,period_length,
                     position_date,position_date,position_date,position_date,position_date)
 
-        # _logger.info("==================")
-        # _logger.info(query)
-        # _logger.info(params)
-        # _logger.info(query % params)
-        # _logger.info("==================")
+        _logger.info("==================")
+       # _logger.info(query)
+       # _logger.info(params)
+        _logger.info(query % params)
+        _logger.info("==================")
 
 
         self.env.cr.execute(query, params)
