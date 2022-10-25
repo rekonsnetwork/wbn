@@ -21,7 +21,7 @@ class AgedPartnerReportDetail(models.TransientModel):
                             ('internal_type', 'Internal Type'),
                             ('journal_name', 'Journal'),
                             ('journal_no', 'Journal No'),
-                            ('journal_state', 'Jourbal State'),
+                            ('journal_state', 'State'),
                             ('invoice_no', 'Invoice No'),
                             ('date', 'Date'),
                             ('date_maturity', 'Due Date'),

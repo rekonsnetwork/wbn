@@ -39,7 +39,7 @@ class AgedPartnerReportDetail(models.TransientModel):
                            ('ref', 'Ref'),
                            ('ref2', 'Ref 2'),
                            ('ref3', 'Ref 3'),
-                           ('journal_state', 'Journal State'),
+                           ('journal_state', 'State'),
                            ('reverse_date', 'Reverse Date'),
                            ('reverse_entry_id', 'Reverse Entry Id'),
                            ('invoice_no', 'Invoice No'),
