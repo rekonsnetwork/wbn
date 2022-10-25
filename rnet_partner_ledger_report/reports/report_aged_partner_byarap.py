@@ -31,9 +31,7 @@ class AgedPartnerReportDetail(models.TransientModel):
                             ('amount', 'Amount'),
                             ('amount_paid', 'Amount Paid'),
                             ('unreconsiled_payment', 'Unreconsiled Payment'),
-                            ('over_due', 'Over Due'),
-                            ('not_due', 'Not Due'),   
-                            ('age_0', '< 0'),                                                    
+                            ('not_due', 'Not Due'),                                                   
                             ('age_1', 'age1-age2'),
                             ('age_2', 'age2-age3'),
                             ('age_3', 'age3-age4'),
@@ -59,7 +57,8 @@ class AgedPartnerReportDetail(models.TransientModel):
 
         detail_short_date_format = workbook.add_format({'num_format': 'dd-mmm-yyyy', 'align': 'center','border': 1})  
         detail_long_date_format = workbook.add_format({'num_format': 'dd-mmm-yyyy HH:mm:ss', 'align': 'center','border': 1})
-        detail_float_format = workbook.add_format({'num_format': '#,##0.00','border': 1})
+        detail_float_format = workbook.add_format({'num_format': '#,##0.00','border': 1})     
+        detail_int_format = workbook.add_format({'num_format': '#,##0','border': 1})  
         detail_general_format = workbook.add_format({'border': 1})
 
         total_float_format = workbook.add_format({'num_format': '#,##0.00','border': 1,'bg_color':'#D9D9D9','bold': True})
@@ -103,8 +102,6 @@ class AgedPartnerReportDetail(models.TransientModel):
             sheader=sheader.replace("age4", str(period_length*3) )
             sheader=sheader.replace("age5", str(period_length*4) )
             sheader=sheader.replace("+age", "+"+str(period_length*4) )
-            
-          #  worksheet.write(row, col, self.columns[key], header_format)
             worksheet.write(row, col, sheader, header_format)
             col += 1
 
@@ -114,10 +111,10 @@ class AgedPartnerReportDetail(models.TransientModel):
         row = 7
         
         total={}    
+        total["amount"]=0
+        total["amount_paid"]=0
         total["unreconsiled_payment"]=0
-        total["over_due"]=0
         total["not_due"]=0
-        total["age_0"]=0
         total["age_1"]=0
         total["age_2"]=0
         total["age_3"]=0
@@ -129,25 +126,33 @@ class AgedPartnerReportDetail(models.TransientModel):
             col = 0
             for key in self.columns:
                 value = dict[key]
+
                 if isinstance(value, (datetime.datetime)):
-                    worksheet.write(row, col, value, detail_long_date_format)
+                    cellformat=detail_long_date_format
                 elif isinstance(value, (datetime.date)):
-                    worksheet.write(row, col, value, detail_short_date_format)
+                    cellformat=detail_short_date_format
+                elif isinstance(value, (int)):
+                    cellformat=detail_int_format                    
                 elif isinstance(value, (float)):
-                    worksheet.write(row, col, value, detail_float_format)
+                    cellformat=detail_float_format
                 else:
-                    worksheet.write(row, col, value, detail_general_format)
+                    cellformat=detail_general_format
+
+                if key in ("age","age_category"):
+                    cellformat=detail_int_format 
+
+                worksheet.write(row, col, value, cellformat)
                 worksheet.set_column(
                     col, col, self._estimate_col_length(value))
 
                 if key=="unreconsiled_payment":
-                    total[key]+= value    
-                if key=="over_due":
+                    total[key]+= value   
+                if key=="amount":
                     total[key]+= value     
+                if key=="amount_paid":
+                    total[key]+= value                                      
                 if key=="not_due":
-                    total[key]+= value     
-                if key=="age_0":
-                    total[key]+= value                                                        
+                    total[key]+= value                                                           
                 if key=="age_1":
                     total[key]+= value  
                 if key=="age_2":
@@ -164,16 +169,16 @@ class AgedPartnerReportDetail(models.TransientModel):
                 col += 1
             row += 1
 
+        worksheet.write(row, 12, total["amount"], total_float_format)   
+        worksheet.write(row, 13, total["amount_paid"], total_float_format)   
         worksheet.write(row, 14, total["unreconsiled_payment"], total_float_format)
-        worksheet.write(row, 15, total["over_due"], total_float_format)
-        worksheet.write(row, 16, total["not_due"], total_float_format)  
-        worksheet.write(row, 17, total["age_0"], total_float_format)              
-        worksheet.write(row, 18, total["age_1"], total_float_format)
-        worksheet.write(row, 19, total["age_2"], total_float_format)
-        worksheet.write(row, 20, total["age_3"], total_float_format)
-        worksheet.write(row, 21, total["age_4"], total_float_format)
-        worksheet.write(row, 22, total["age_5"], total_float_format)
-        worksheet.write(row, 23, total["balance"], total_float_format)            
+        worksheet.write(row, 15, total["not_due"], total_float_format)              
+        worksheet.write(row, 16, total["age_1"], total_float_format)
+        worksheet.write(row, 17, total["age_2"], total_float_format)
+        worksheet.write(row, 18, total["age_3"], total_float_format)
+        worksheet.write(row, 19, total["age_4"], total_float_format)
+        worksheet.write(row, 20, total["age_5"], total_float_format)
+        worksheet.write(row, 21, total["balance"], total_float_format)            
     
         workbook.close()
 
@@ -247,15 +252,9 @@ class AgedPartnerReportDetail(models.TransientModel):
                 case when a.age_category is null then a.balance else 0 end as unreconsiled_payment,                 
                 case 
                     when a.age_category is null then 0 
-                    when a.balance<>0 and a.date<=cast(%s  as TIMESTAMP) and a.date_maturity < cast(%s  as TIMESTAMP) then a.balance 
-                    else 0 
-                end as over_due,               
-                case 
-                    when a.age_category is null then 0 
                     when a.balance<>0 and a.date<=cast(%s  as TIMESTAMP) and a.date_maturity >= cast(%s  as TIMESTAMP) then a.balance
                     else 0
                 end as not_due,        
-                case when a.age_category<0 then a.balance else 0 end as age_0,
                 case when a.age_category=%s*1 then a.balance else 0 end as age_1,
                 case when a.age_category=%s*2 then a.balance else 0 end as age_2,
                 case when a.age_category=%s*3 then a.balance else 0 end as age_3,
@@ -281,16 +280,16 @@ class AgedPartnerReportDetail(models.TransientModel):
                 a.invoice_no,
                 a.date,
                 a.date_maturity,        
-                (extract(day from a.date - cast(%s as TIMESTAMP) )) as age,
+                (extract(day from cast(%s as TIMESTAMP)-a.date_maturity )) as age,
                 case
-                    when (extract(day from date - cast(%s  as TIMESTAMP) )) < 0 then
-                        (floor((extract(day from date - cast(%s as TIMESTAMP) )) / %s)) * %s
+                    when (extract(day from cast(%s  as TIMESTAMP)-date_maturity )) < 0 then
+                        (floor((extract(day from cast(%s as TIMESTAMP)-a.date_maturity )) / %s)) * %s
                     else
-                        (floor((extract(day from date - cast(%s as TIMESTAMP) )) / %s) + 1) * %s
+                        (floor((extract(day from cast(%s as TIMESTAMP)-a.date_maturity  )) / %s) + 1) * %s
                 end as age_category,                                                          
                 a.currency,
                 a.balance as amount,
-                coalesce(coalesce(pyr.payment_amount,pyp.payment_amount),0)  as amount_paid,
+                -coalesce(coalesce(pyr.payment_amount,pyp.payment_amount),0)  as amount_paid,
                 a.balance-coalesce((coalesce(pyr.payment_amount,pyp.payment_amount)),0) as balance,
                 a.invoice_origin,
                 a.invoice_manual_delivery_no	
@@ -371,10 +370,10 @@ class AgedPartnerReportDetail(models.TransientModel):
                 a.invoice_no,
                 a.date,
                 a.date_maturity,                
-                (extract(day from a.date_maturity - cast(%s as TIMESTAMP) )) as age,
+                (extract(day from cast(%s as TIMESTAMP)-a.date_maturity  )) as age,
                 NULL as age_category,                                            
                 a.currency,
-                a.balance as amount,
+                0 as amount,
                 a.balance as amount_paid,
                 a.balance as balance,
                 a.invoice_origin,
@@ -417,21 +416,21 @@ class AgedPartnerReportDetail(models.TransientModel):
                 a.date
         """
 
-        params = (  position_date, position_date, position_date, position_date, 
+        params = (  position_date, position_date, 
                     period_length, period_length, period_length, period_length, period_length, 
-                    position_date, position_date, position_date, 
+                    position_date, position_date, 
+                    position_date, 
                     period_length,period_length,
                     position_date,
                     period_length,period_length,
                     position_date,position_date,position_date,position_date,position_date)
 
-        _logger.info("==================")
-        _logger.info(query)
-        _logger.info(params)
-        _logger.info(query % params)
-        _logger.info("==================")
+        # _logger.info("==================")
+        # _logger.info(query)
+        # _logger.info(params)
+        # _logger.info(query % params)
+        # _logger.info("==================")
 
 
         self.env.cr.execute(query, params)
-#        self.env.cr.execute(query)
         return self.env.cr.dictfetchall()

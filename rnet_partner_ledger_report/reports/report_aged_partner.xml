@@ -8,7 +8,7 @@
                     <th>Partners</th>
                     <th>Currency</th>
                     <th class="text-right">
-                        <span>Over due</span>
+                        <span>Not Due</span>
                     </th>
                     <th class="text-right">
                         <span t-esc="data['4']['name']" />

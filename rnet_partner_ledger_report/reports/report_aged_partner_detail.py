@@ -72,6 +72,7 @@ class AgedPartnerReportDetail(models.TransientModel):
         detail_short_date_format = workbook.add_format({'num_format': 'dd-mmm-yyyy', 'align': 'center','border': 1})  
         detail_long_date_format = workbook.add_format({'num_format': 'dd-mmm-yyyy HH:mm:ss', 'align': 'center','border': 1})
         detail_float_format = workbook.add_format({'num_format': '#,##0.00','border': 1})
+        detail_int_format = workbook.add_format({'num_format': '#,##0','border': 1})    
         detail_general_format = workbook.add_format({'border': 1})
 
         total_float_format = workbook.add_format({'num_format': '#,##0.00','border': 1,'bg_color':'#D9D9D9','bold': True})   
@@ -122,14 +123,23 @@ class AgedPartnerReportDetail(models.TransientModel):
             col = 0
             for key in self.columns:
                 value = dict[key]
+
                 if isinstance(value, (datetime.datetime)):
-                    worksheet.write(row, col, value, detail_long_date_format)
+                    cellformat=detail_long_date_format
                 elif isinstance(value, (datetime.date)):
-                    worksheet.write(row, col, value, detail_short_date_format)
+                    cellformat=detail_short_date_format
+                elif isinstance(value, (int)):
+                    cellformat=detail_int_format                    
                 elif isinstance(value, (float)):
-                    worksheet.write(row, col, value, detail_float_format)
+                    cellformat=detail_float_format
                 else:
-                    worksheet.write(row, col, value, detail_general_format)
+                    cellformat=detail_general_format
+
+                if key in ("age","age_category"):
+                    cellformat=detail_int_format 
+
+                worksheet.write(row, col, value, cellformat)
+
                 worksheet.set_column(
                     col, col, self._estimate_col_length(value))
 
@@ -202,16 +212,12 @@ class AgedPartnerReportDetail(models.TransientModel):
                 a.partner,
                 a.date,
                 a.date_maturity,
-                (extract(day
-            from
-                a.date_maturity - cast(%s as TIMESTAMP) )) as age,
+                (extract(day from cast(%s as TIMESTAMP)-a.date_maturity  )) as age,
                 case
-                    when (extract(day
-                from
-                    a.date_maturity - cast(%s as TIMESTAMP) )) < 0 then
-                    (floor((extract(day from a.date_maturity - cast(%s as TIMESTAMP) )) / %s)) * %s
+                    when (extract(day from cast(%s as TIMESTAMP)-a.date_maturity  )) < 0 then
+                    (floor((extract(day from cast(%s as TIMESTAMP)-a.date_maturity )) / %s)) * %s
                     else
-                    (floor((extract(day from a.date_maturity - cast(%s as TIMESTAMP) )) / %s) + 1) * %s
+                    (floor((extract(day from cast(%s as TIMESTAMP)-a.date_maturity )) / %s) + 1) * %s
                 end as age_category,
                 a.journal_name,
                 a.debit,
@@ -317,11 +323,11 @@ class AgedPartnerReportDetail(models.TransientModel):
                 a.journal_create_date
         """
 
-        _logger.info("==================")
-        _logger.info(query)
-        _logger.info(params)
-        _logger.info(query % params)
-        _logger.info("==================")
+        # _logger.info("==================")
+        # _logger.info(query)
+        # _logger.info(params)
+        # _logger.info(query % params)
+        # _logger.info("==================")
 
         self.env.cr.execute(query, params)
         return self.env.cr.dictfetchall()
