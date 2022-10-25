@@ -28,7 +28,8 @@
         'views/business_unit_view.xml',
         'views/sales_area_view.xml',
         'security/ir.model.access.csv',
-        'report/SalesReport.xml'
+        'report/SalesReport.xml',
+        'wizard/account_invoice_refund_view.xml'
     ],
 
     'demo': [
