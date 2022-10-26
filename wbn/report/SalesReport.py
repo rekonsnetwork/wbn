@@ -21,6 +21,8 @@ class SalesReport(models.Model):
 
     price_unit = fields.Float('Unit Price Avg.', group_operator='avg')
 
+    invoice_no=fields.Char('Invoice #')
+
     @api.model_cr
     def init(self):
         return
