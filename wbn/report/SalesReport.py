@@ -23,6 +23,9 @@ class SalesReport(models.Model):
 
     invoice_no=fields.Char('Invoice #')
 
+    order_date_year=fields.Char('Order Date Year')
+    order_date_month=fields.Char('Order Date Month')
+
     @api.model_cr
     def init(self):
         return
