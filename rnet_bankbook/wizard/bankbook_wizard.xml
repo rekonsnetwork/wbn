@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="bankbook_wizard" model="ir.ui.view">
+        <field name="name">Bankbook Wizard</field>
+        <field name="model">bankbook.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Bankbook Report">
+                <group>
+                    <group>
+                        <field name="start_date" />
+                        <field name="end_date" />
+                    </group>
+                    <group>
+                        <field name="target_moves" widget="radio" default_focus="1"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="print" string="Print" type="object" class="oe_highlight" context="{'report_type':'excel'}" />
+                    <button string="Cancel" class="btn btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="open_bankbook_wizard" model="ir.actions.act_window">
+        <field name="name">Bankbook Report</field>
+        <field name="res_model">bankbook.wizard</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="bankbook_wizard" />
+        <field name="target">new</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem id="menu_bank_and_cashbook" name="Bankbook and Cashbook Report"
+        parent="account.menu_finance_reports" sequence="50" />
+    <menuitem id="menu_bankbook" name="Bankbook Report"
+        parent="menu_bank_and_cashbook" sequence="10" action="open_bankbook_wizard" />
+</odoo>
