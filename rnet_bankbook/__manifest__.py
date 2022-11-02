@@ -8,7 +8,8 @@
     'description': """
     """,
     'data': [
-        'wizard/bankbook_wizard.xml'
+        'wizard/bankbook_wizard.xml',
+        'wizard/excel_wizard.xml',
     ],
     'demo': [],
     'category': 'Accounting',
