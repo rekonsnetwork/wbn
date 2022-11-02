@@ -14,6 +14,12 @@
                         <field name="target_moves" widget="radio" default_focus="1"/>
                     </group>
                 </group>
+                <group>
+                    <group>
+                        <field name="bank_account_id" options="{'no_create': True, 'no_open' : True}"/>
+                    </group>
+                    <group></group>
+                </group>
                 <footer>
                     <button name="print" string="Print" type="object" class="oe_highlight" context="{'report_type':'excel'}" />
                     <button string="Cancel" class="btn btn-default" special="cancel" />
