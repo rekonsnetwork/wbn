@@ -12,47 +12,47 @@ class BankbookExcel(models.TransientModel):
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output)
 
-        headerFormat = workbook.add_format({'bold': True,})
-        shortDateFormat = workbook.add_format({'num_format': 'dd-mmm-yyyy',})
-        longDateFormat = workbook.add_format({'num_format': 'dd-mmm-yyyy HH:mm:ss',})
-        floatFormat = workbook.add_format({'num_format': '#,##0.00',})
-        intFormat = workbook.add_format({'num_format': '#,##0',})
-        generalFormat = workbook.add_format({})
+        header_format = workbook.add_format({'bold': True,})
+        short_date_format = workbook.add_format({'num_format': 'dd-mmm-yyyy',})
+        long_date_format = workbook.add_format({'num_format': 'dd-mmm-yyyy HH:mm:ss',})
+        float_format = workbook.add_format({'num_format': '#,##0.00',})
+        int_format = workbook.add_format({'num_format': '#,##0',})
+        general_format = workbook.add_format({})
 
         worksheet = workbook.add_worksheet()
         worksheet.set_landscape()
 
-        rowNum = 0
-        colNum = 0
-        columnNames = list(report_data[0].keys())
-        columnNames.sort()
-        for colName in columnNames:
-            worksheet.write(rowNum, colNum, colName, headerFormat)
-            colNum += 1
+        row_num = 0
+        col_num = 0
+        column_names = list(report_data[0].keys())
+        column_names.sort()
+        for col_name in column_names:
+            worksheet.write(row_num, col_num, col_name, header_format)
+            col_num += 1
 
-        rowNum = 1
+        row_num = 1
         for dict in report_data:
-            colNum = 0
-            for colName in columnNames:
-                cellValue = dict[colName]
-                cellFormat = generalFormat
-                if isinstance(cellValue, (datetime.datetime)):
-                    cellFormat = longDateFormat
-                elif isinstance(cellValue, (datetime.date)):
-                    cellFormat = shortDateFormat
-                elif isinstance(cellValue, (int)):
-                    cellFormat = intFormat
-                elif isinstance(cellValue, (float)):
-                    cellFormat = floatFormat
+            col_num = 0
+            for col_name in column_names:
+                cell_value = dict[col_name]
+                cell_format = general_format
+                if isinstance(cell_value, (datetime.datetime)):
+                    cell_format = long_date_format
+                elif isinstance(cell_value, (datetime.date)):
+                    cell_format = short_date_format
+                elif isinstance(cell_value, (int)):
+                    cell_format = int_format
+                elif isinstance(cell_value, (float)):
+                    cell_format = float_format
 
-                worksheet.write(rowNum, colNum, cellValue, cellFormat)
-                worksheet.set_column(colNum, colNum, self._estimate_col_length(cellValue))
-                colNum += 1
-            rowNum += 1
+                worksheet.write(row_num, col_num, cell_value, cell_format)
+                worksheet.set_column(col_num, col_num, self._estimate_col_length(cell_value))
+                col_num += 1
+            row_num += 1
 
         workbook.close()
 
-        exportId = self.env['excel.wizard'].create({
+        export_id = self.env['excel.wizard'].create({
             'excel_file': base64.encodestring(output.getvalue()),
             'file_name': 'Bankbook Report.xls'
         })
@@ -60,7 +60,7 @@ class BankbookExcel(models.TransientModel):
 
         res = {
             'view_mode': 'form',
-            'res_id': exportId.id,
+            'res_id': export_id.id,
             'res_model': 'excel.wizard',
             'view_type': 'form',
             'type': 'ir.actions.act_window',
@@ -69,10 +69,10 @@ class BankbookExcel(models.TransientModel):
         return res
 
     def _estimate_col_length(self, value):
-        colLength = 20
-        isBool = isinstance(value, (bool))
-        if not isBool and (value is not None):
+        col_length = 20
+        is_bool = isinstance(value, (bool))
+        if not is_bool and (value is not None):
             if len(str(value)) < 15:
-                return colLength
-            colLength = len(str(value))
-        return colLength
+                return col_length
+            col_length = len(str(value))
+        return col_length
