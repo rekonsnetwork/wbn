@@ -1,15 +1,16 @@
 {
-    'name': 'RNET Bankbook',
+    'name': 'RNET Bank & Cash book',
     'version': '1.0',
     'depends': ['account'],
     'author': 'Rekons Network',
     'website': 'http://www.rekons.net/',
-    'summary': 'Bankbook & Cashbook Report',
+    'summary': 'Bank Book & Cash Book Report',
     'description': """
     """,
     'data': [
         'wizard/bankbook_wizard.xml',
-        'wizard/excel_wizard.xml',
+        'wizard/cashbook_wizard.xml',     
+        'wizard/excel_wizard.xml',    
     ],
     'demo': [],
     'category': 'Accounting',

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="bankbook_wizard" model="ir.ui.view">
-        <field name="name">Bankbook Wizard</field>
-        <field name="model">bankbook.wizard</field>
+    <record id="cashbook_wizard" model="ir.ui.view">
+        <field name="name">cashbook Wizard</field>
+        <field name="model">cashbook.wizard</field>
         <field name="arch" type="xml">
-            <form string="Bankbook Report">
+            <form string="cashbook Report">
                 <group>
                     <group>
                         <field name="start_date" />
@@ -28,21 +28,19 @@
         </field>
     </record>
 
-    <record id="open_bankbook_wizard" model="ir.actions.act_window">
-        <field name="name">Bankbook Report</field>
-        <field name="res_model">bankbook.wizard</field>
+    <record id="open_cashbook_wizard" model="ir.actions.act_window">
+        <field name="name">Cashbook Report</field>
+        <field name="res_model">cashbook.wizard</field>
         <field name="type">ir.actions.act_window</field>
         <field name="view_mode">tree,form</field>
-        <field name="view_id" ref="bankbook_wizard" />
+        <field name="view_id" ref="cashbook_wizard" />
         <field name="target">new</field>
         <field name="domain">[]</field>
         <field name="context">{}</field>
     </record>
 
-    <menuitem id="menu_bank_and_cashbook" name="Bankbook and Cashbook Report"
-        parent="account.menu_finance_reports" sequence="50" />
-    <menuitem id="menu_bankbook" name="Bank Book Report"
-        parent="menu_bank_and_cashbook" sequence="10" action="open_bankbook_wizard" />
+    <menuitem id="menu_cashbook" name="Cash Book Report"
+        parent="menu_bank_and_cashbook" sequence="12" action="open_cashbook_wizard" />
 
 
 </odoo>
