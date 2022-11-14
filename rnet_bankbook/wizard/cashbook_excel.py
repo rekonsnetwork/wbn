@@ -5,12 +5,10 @@ import base64
 import io
 import logging
 
-
 _logger = logging.getLogger(__name__)
 
 class CashbookExcel(models.TransientModel):
     _name = 'cashbook.excel'
-
 
     def print(self, report_data, data):
         output = io.BytesIO()
@@ -41,7 +39,7 @@ class CashbookExcel(models.TransientModel):
         worksheet.merge_range('A1:C1', report_title, title_format)   
 
         worksheet.write(1, 0, 'Cash Account', parameter_format)
-        worksheet.write(1, 1,  data['form']['cash_account_text'], parameter_format_value)       
+        worksheet.write(1, 1,  data['form']['cash_account_desc'], parameter_format_value)       
         worksheet.write(2, 0, 'Start Date', parameter_format)
         worksheet.write(2, 1,  data['form']['start_date'], parameter_format_date)
         worksheet.write(3, 0, 'End Date', parameter_format)

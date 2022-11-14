@@ -3,17 +3,12 @@ from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 import logging
 
-
 _logger = logging.getLogger(__name__)
-
-def get_selection_label(self, object, field_name, field_value):
-        return dict(self.env[object].fields_get(allfields=[field_name])[field_name]['selection'])[field_value]
-
 
 class CashbookWizard(models.TransientModel):
     _name = 'cashbook.wizard'
   
-    _logger.info("START1 ===============")  
+  #  _logger.info("START1 ===============")  
 
     start_date = fields.Date('Start Date',required=True, default=datetime.now().strftime('%Y-%m-01'))
     end_date = fields.Date('End Date',required=True, default=datetime.now().strftime('%Y-%m-%d'))
@@ -22,25 +17,22 @@ class CashbookWizard(models.TransientModel):
     target_moves = fields.Selection([('posted', 'All Posted Entries'), ('all', 'All Entries'),],
                                     string='Target Moves', required=True, default='posted')
 
-
-
-
     def print(self):
 
         data = {}
-
-        cash_account_text= str(self.cash_account_id.name)  
+        cash_account_desc= str(self.cash_account_id.name)  +' ('+str(self.cash_account_id.default_debit_account_id.code)+' - '+str(self.cash_account_id.default_debit_account_id.name)+')'
+        cash_account_text= str(self.cash_account_id.name)
         target_move_text = dict(self.fields_get(allfields=['target_moves'])['target_moves']['selection'])[self.target_moves]
 
         data['form'] = ({
             'cash_account_id': self.cash_account_id,
             'cash_account_text': cash_account_text,
+            'cash_account_desc': cash_account_desc,
             'target_move': self.target_moves,
             'target_move_text': target_move_text,
             'start_date': self.start_date,
             'end_date': self.end_date,
         })
-
 
         report_data = self._get_report_data()
         if not report_data:
