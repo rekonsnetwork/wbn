@@ -27,9 +27,12 @@
         'views/sale_views.xml',
         'views/business_unit_view.xml',
         'views/sales_area_view.xml',
+        'views/product_category_view.xml',        
         'security/ir.model.access.csv',
         'report/SalesReport.xml',
-        'wizard/account_invoice_refund_view.xml'
+        'wizard/account_invoice_refund_view.xml',
+        'data/product_sequence.xml' 
+         
     ],
 
     'demo': [

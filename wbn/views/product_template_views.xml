@@ -9,6 +9,7 @@
                 <field name="purchase_ok" readonly="True"/>
                 <field name="can_be_expensed" readonly="True"/>
                 <field name="route_ids" readonly="True" widget="many2many_tags"/>
+                <field name="create_date" readonly="True"/>
             </xpath>
         </field>
     </record>
